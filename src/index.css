@@ -74,6 +74,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    min-height: 44px;
+    touch-action: manipulation;
     &:active { transform: scale(0.96); }
   }
 
@@ -86,6 +88,7 @@ body {
   .btn-sm {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
+    min-height: 44px;
   }
 
   .input-field {

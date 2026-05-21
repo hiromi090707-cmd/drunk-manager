@@ -80,8 +80,8 @@ export function MembersTab({ partyState, onUpdate }: Props) {
                     onMouseDown={() => handlePressStart(member.id, drink.id)}
                     onMouseUp={() => handlePressEnd(member.id, drink.id)}
                     onMouseLeave={handlePressCancel}
-                    onTouchStart={() => handlePressStart(member.id, drink.id)}
-                    onTouchEnd={() => handlePressEnd(member.id, drink.id)}
+                    onTouchStart={(e) => { e.preventDefault(); handlePressStart(member.id, drink.id); }}
+                    onTouchEnd={(e) => { e.preventDefault(); handlePressEnd(member.id, drink.id); }}
                     onTouchMove={handlePressCancel}
                   >
                     <span style={{ fontSize: '1.5rem', pointerEvents: 'none' }}>{drink.emoji}</span>
