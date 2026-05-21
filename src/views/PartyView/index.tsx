@@ -64,9 +64,6 @@ export function PartyView() {
     { id: 'summary' as const, label: '要約', icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
   ];
 
-  const areas = [...new Set(historyData.map((p) => p.areaName).filter(Boolean))];
-  const stores = [...new Set(historyData.map((p) => p.storeName).filter(Boolean))];
-
   return (
     <>
       <div className="view" style={{ paddingBottom: 0 }}>
@@ -85,32 +82,23 @@ export function PartyView() {
           }
         </div>
 
-        <div className="flex justify-between mb-4" style={{ gap: '0.5rem' }}>
+        <div className="flex mb-4" style={{ gap: '0.5rem' }}>
           <input
             type="text"
-            list="area-history"
-            className="input-field flex-1"
-            style={{ padding: '0.4rem', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(0,0,0,0.2)', border: '1px dashed var(--border-color)' }}
+            className="input-field"
+            style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.4rem', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(0,0,0,0.2)', border: '1px dashed var(--border-color)' }}
             placeholder="エリア (例: 新宿)"
             value={partyState.areaName}
             onChange={(e) => updatePartyState({ ...partyState, areaName: e.target.value })}
           />
           <input
             type="text"
-            list="store-history"
-            className="input-field flex-1"
-            style={{ padding: '0.4rem', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(0,0,0,0.2)', border: '1px dashed var(--border-color)' }}
+            className="input-field"
+            style={{ flex: 1, minWidth: 0, padding: '0.5rem 0.4rem', textAlign: 'center', fontSize: '0.9rem', background: 'rgba(0,0,0,0.2)', border: '1px dashed var(--border-color)' }}
             placeholder="店名を入力"
             value={partyState.storeName}
             onChange={(e) => updatePartyState({ ...partyState, storeName: e.target.value })}
           />
-          <datalist id="area-history">
-            {areas.map((a) => <option key={a} value={a} />)}
-            <option value="新宿" /><option value="武蔵小杉" /><option value="渋谷" />
-          </datalist>
-          <datalist id="store-history">
-            {stores.map((s) => <option key={s} value={s} />)}
-          </datalist>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
