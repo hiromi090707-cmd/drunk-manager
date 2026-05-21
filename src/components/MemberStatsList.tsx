@@ -53,10 +53,10 @@ export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
             </div>
             <div className="flex justify-between text-sm" style={{ color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '0.3rem 0.5rem', borderRadius: 4 }}>
               <div className="flex gap-2">
-                {m.drinks.beer > 0 && <span>🍺{m.drinks.beer}</span>}
-                {m.drinks.highball > 0 && <span>🥃{m.drinks.highball}</span>}
-                {m.drinks.sour > 0 && <span>🍋{m.drinks.sour}</span>}
-                {m.drinks.other > 0 && <span>🍷{m.drinks.other}</span>}
+                <span>🍺{m.drinks.beer}</span>
+                <span>🥃{m.drinks.highball}</span>
+                <span>🍋{m.drinks.sour}</span>
+                <span>🍷{m.drinks.other}</span>
               </div>
               <span className="font-bold">計 {m.totalDrinks} 杯</span>
             </div>

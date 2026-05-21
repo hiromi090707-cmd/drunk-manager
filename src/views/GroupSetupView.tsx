@@ -8,12 +8,15 @@ import { FIXED_MEMBERS } from '../constants';
 export function GroupSetupView() {
   const { dispatch } = useApp();
   const [inviteCode, setInviteCode] = useState('');
+  const [customCode, setCustomCode] = useState('');
 
   async function handleCreateGroup() {
     const user = auth.currentUser;
     if (!user) return;
+    const code = customCode.trim().toUpperCase();
+    if (code && code.length < 2) return alert('招待コードは2文字以上で入力してください。');
     try {
-      const group = await createGroup('いつメン', [...FIXED_MEMBERS], user.uid, user.email ?? '');
+      const group = await createGroup('いつメン', [...FIXED_MEMBERS], user.uid, user.email ?? '', code || undefined);
       dispatch({ type: 'SET_GROUP', group });
       alert(`グループを作成しました！\n\n招待コード: ${group.inviteCode}\n\nこのコードを仲間に共有してください。`);
       dispatch({ type: 'SET_VIEW', view: 'home' });
@@ -46,6 +49,18 @@ export function GroupSetupView() {
 
       <div className="glass p-4 mb-4" style={{ width: '100%', maxWidth: 320 }}>
         <h3 className="text-center mb-3" style={{ fontSize: '1rem' }}>🍺 新しく作る</h3>
+        <input
+          type="text"
+          value={customCode}
+          onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+          className="input-field w-full mb-3 text-center"
+          style={{ textTransform: 'uppercase', letterSpacing: '0.2rem', fontSize: '1.1rem' }}
+          placeholder="招待コード（省略可）"
+          maxLength={16}
+        />
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textAlign: 'center', marginBottom: '0.75rem' }}>
+          空欄の場合は自動生成されます
+        </p>
         <button onClick={handleCreateGroup} className="btn btn-primary w-full p-3">
           グループを作成
         </button>

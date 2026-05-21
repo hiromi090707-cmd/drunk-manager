@@ -27,8 +27,9 @@ export async function createGroup(
   members: { id: string; name: string }[],
   creatorUid: string,
   creatorEmail: string,
+  customInviteCode?: string,
 ): Promise<Group> {
-  const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const inviteCode = customInviteCode || Math.random().toString(36).substring(2, 8).toUpperCase();
   const groupRef = doc(collection(db, 'groups'));
   const groupData = {
     name: groupName,
