@@ -18,6 +18,7 @@ export function StatsView() {
 
   function handleEditParty(party: Party) {
     const partyState = buildEditPartyState(party);
+    dispatch({ type: 'SET_EDITING_EXISTING', value: true });
     dispatch({ type: 'SET_PARTY_STATE', party: partyState });
     dispatch({ type: 'SET_PARTY_TAB', tab: 'summary' });
     dispatch({ type: 'SET_VIEW', view: 'party' });

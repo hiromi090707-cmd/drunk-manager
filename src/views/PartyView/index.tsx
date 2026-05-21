@@ -8,16 +8,17 @@ import { SummaryTab } from './SummaryTab';
 
 export function PartyView() {
   const { state, dispatch } = useApp();
-  const { partyState, activePartyTab, historyData } = state;
+  const { partyState, activePartyTab, editingExistingParty: isEditing } = state;
   const listenerRef = useRef<(() => void) | null>(null);
-
-  const isEditing = historyData.some((p) => p._docId === partyState.id);
+  const partyStateRef = useRef(partyState);
+  partyStateRef.current = partyState;
 
   useEffect(() => {
     if (!partyState.id) return;
     listenerRef.current = listenToParty(partyState.id, (updated) => {
-      if (updated.members && JSON.stringify(updated.members) !== JSON.stringify(partyState.members)) {
-        dispatch({ type: 'SET_PARTY_STATE', party: { ...partyState, members: updated.members } });
+      const current = partyStateRef.current;
+      if (updated.members && JSON.stringify(updated.members) !== JSON.stringify(current.members)) {
+        dispatch({ type: 'SET_PARTY_STATE', party: { ...current, members: updated.members } });
       }
     });
     return () => { listenerRef.current?.(); };
@@ -47,6 +48,7 @@ export function PartyView() {
         summaryText: partyState.summary.result,
       });
       listenerRef.current?.();
+      dispatch({ type: 'SET_EDITING_EXISTING', value: false });
       dispatch({ type: 'SET_VIEW', view: isEditing ? 'stats' : 'home' });
     } catch {
       alert('保存に失敗しました。ネットワーク接続を確認してください。');
@@ -55,6 +57,7 @@ export function PartyView() {
 
   function handleCancel() {
     listenerRef.current?.();
+    dispatch({ type: 'SET_EDITING_EXISTING', value: false });
     dispatch({ type: 'SET_VIEW', view: 'stats' });
   }
 

@@ -22,6 +22,7 @@ interface AppState {
   activeStatsTab: StatsTab;
   statsDate: Date;
   sharedText: string;
+  editingExistingParty: boolean;
 }
 
 type AppAction =
@@ -33,6 +34,7 @@ type AppAction =
   | { type: 'SET_STATS_TAB'; tab: StatsTab }
   | { type: 'SET_STATS_DATE'; date: Date }
   | { type: 'SET_SHARED_TEXT'; text: string }
+  | { type: 'SET_EDITING_EXISTING'; value: boolean }
   | { type: 'LOGOUT' };
 
 const initialState: AppState = {
@@ -44,6 +46,7 @@ const initialState: AppState = {
   activeStatsTab: 'month',
   statsDate: new Date(),
   sharedText: '',
+  editingExistingParty: false,
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -56,6 +59,7 @@ function reducer(state: AppState, action: AppAction): AppState {
     case 'SET_STATS_TAB': return { ...state, activeStatsTab: action.tab };
     case 'SET_STATS_DATE': return { ...state, statsDate: action.date };
     case 'SET_SHARED_TEXT': return { ...state, sharedText: action.text };
+    case 'SET_EDITING_EXISTING': return { ...state, editingExistingParty: action.value };
     case 'LOGOUT':
       return { ...initialState, view: 'login', partyState: makeInitialPartyState() };
     default: return state;
