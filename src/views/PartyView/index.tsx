@@ -67,19 +67,24 @@ export function PartyView() {
   return (
     <>
       <div className="view" style={{ paddingBottom: 0 }}>
-        <div className="flex justify-between items-center mb-2">
-          <button
-            onClick={handleEndParty}
-            className="btn btn-sm"
-            style={isEditing ? { color: 'var(--accent-color)', fontWeight: 'bold' } : {}}
-          >
-            {isEditing ? '保存' : '終了'}
-          </button>
-          <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{isEditing ? '履歴を編集' : '飲み会中'}</h2>
-          {isEditing
-            ? <button onClick={handleCancel} className="btn btn-sm">戻る</button>
-            : <div style={{ width: 50 }} />
-          }
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <div style={{ flex: 1 }}>
+            <button
+              onClick={handleEndParty}
+              className="btn btn-sm"
+              style={{ width: '100%', ...(isEditing ? { color: 'var(--accent-color)', fontWeight: 'bold' } : {}) }}
+            >
+              {isEditing ? '保存' : '終了'}
+            </button>
+          </div>
+          <h2 style={{ flex: 2, textAlign: 'center', margin: 0, fontSize: '1.1rem' }}>
+            {isEditing ? '履歴を編集' : '飲み会中'}
+          </h2>
+          <div style={{ flex: 1 }}>
+            {isEditing && (
+              <button onClick={handleCancel} className="btn btn-sm" style={{ width: '100%' }}>戻る</button>
+            )}
+          </div>
         </div>
 
         <div className="flex mb-4" style={{ gap: '0.5rem' }}>
