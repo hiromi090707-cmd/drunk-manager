@@ -58,7 +58,7 @@ export function PartyView() {
   function handleCancel() {
     listenerRef.current?.();
     dispatch({ type: 'SET_EDITING_EXISTING', value: false });
-    dispatch({ type: 'SET_VIEW', view: 'stats' });
+    dispatch({ type: 'SET_VIEW', view: isEditing ? 'stats' : 'home' });
   }
 
   const tabs = [
@@ -75,18 +75,16 @@ export function PartyView() {
             <button
               onClick={handleEndParty}
               className="btn btn-sm"
-              style={{ width: '100%', ...(isEditing ? { color: 'var(--accent-color)', fontWeight: 'bold' } : {}) }}
+              style={{ width: '100%', color: 'var(--accent-color)', fontWeight: 'bold' }}
             >
-              {isEditing ? '保存' : '終了'}
+              保存
             </button>
           </div>
           <h2 style={{ flex: 2, textAlign: 'center', margin: 0, fontSize: '1.1rem' }}>
             {isEditing ? '履歴を編集' : '飲み会中'}
           </h2>
           <div style={{ flex: 1 }}>
-            {isEditing && (
-              <button onClick={handleCancel} className="btn btn-sm" style={{ width: '100%' }}>戻る</button>
-            )}
+            <button onClick={handleCancel} className="btn btn-sm" style={{ width: '100%' }}>戻る</button>
           </div>
         </div>
 
