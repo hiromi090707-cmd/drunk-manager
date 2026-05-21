@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAllowed() {
+      return isAuthenticated() &&
+        request.auth.token.email in
+          get(/databases/$(database)/documents/config/allowedUsers).data.emails;
+    }
+
+    function isMember(groupId) {
+      return isAuthenticated() &&
+        request.auth.uid in
+          get(/databases/$(database)/documents/groups/$(groupId)).data.memberUids;
+    }
+
+    // 許可ユーザーリストは認証済みなら誰でも読める（ログイン確認のため）
+    match /config/allowedUsers {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /groups/{groupId} {
+      allow read:   if isAllowed();
+      allow create: if isAllowed();
+      allow update: if isAllowed() && isMember(groupId);
+      allow delete: if false;
+
+      match /parties/{partyId} {
+        allow read, write: if isAllowed() && isMember(groupId);
+      }
+    }
+  }
+}
