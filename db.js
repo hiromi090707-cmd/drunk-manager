@@ -2,7 +2,7 @@
 import { db } from './firebase.js';
 import {
   collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc,
-  onSnapshot, query, orderBy, where, serverTimestamp
+  onSnapshot, query, orderBy, where, serverTimestamp, arrayRemove
 } from 'firebase/firestore';
 
 let activeGroupId = null;
@@ -88,6 +88,23 @@ export async function getGroupInfo() {
     return { id: docSnap.id, ...docSnap.data() };
   }
   return null;
+}
+
+// Regenerate invite code
+export async function regenerateInviteCode() {
+  if (!activeGroupId) return null;
+  const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  await updateDoc(doc(db, 'groups', activeGroupId), { inviteCode: newCode });
+  return newCode;
+}
+
+// Leave group (removes uid from memberUids)
+export async function leaveGroup(uid, email) {
+  if (!activeGroupId) return;
+  const updates = { memberUids: arrayRemove(uid) };
+  if (email) updates.memberEmails = arrayRemove(email);
+  await updateDoc(doc(db, 'groups', activeGroupId), updates);
+  activeGroupId = null;
 }
 
 // --- Gemini API Key (shared per group) ---

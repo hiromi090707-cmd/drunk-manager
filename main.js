@@ -1,7 +1,7 @@
 import './style.css';
 import { getUser, loginWithGoogle, logout, authReady } from './auth.js';
 import {
-  findUserGroup, createGroup, joinGroupByCode,
+  findUserGroup, createGroup, joinGroupByCode, regenerateInviteCode, leaveGroup,
   createParty, saveParty, listenToParties, listenToParty, updatePartyMemberDrinks,
   migrateLocalData, saveGeminiApiKey, getGeminiApiKey, getGroupInfo, cleanup
 } from './db.js';
@@ -255,8 +255,15 @@ function renderHome() {
       </div>
       
       ${groupInfo?.inviteCode ? `
-        <div class="text-center mt-4">
-          <p class="text-secondary" style="font-size: 0.7rem;">招待コード: <span style="letter-spacing: 0.2rem; font-weight: bold; color: var(--accent-color);">${groupInfo.inviteCode}</span></p>
+        <div class="glass p-3 mt-4">
+          <div class="flex-between">
+            <div>
+              <p class="text-secondary" style="font-size: 0.7rem; margin-bottom: 0.2rem;">招待コード</p>
+              <span style="letter-spacing: 0.2rem; font-weight: bold; color: var(--accent-color);">${groupInfo.inviteCode}</span>
+            </div>
+            <button id="btn-regen-invite" class="btn btn-sm" style="font-size: 0.75rem; padding: 0.3rem 0.8rem; border: 1px solid var(--border-color); background: transparent;">再生成</button>
+          </div>
+          <button id="btn-leave-group" class="btn btn-sm mt-3 w-full" style="font-size: 0.8rem; color: var(--danger-color); background: transparent; border: 1px solid var(--danger-color);">このグループを退出する</button>
         </div>
       ` : ''}
     </div>
@@ -679,6 +686,35 @@ function attachEventListeners() {
     if (confirm('ログアウトしますか？')) {
       if (activePartyListener) { activePartyListener(); activePartyListener = null; }
       cleanup(); logout();
+    }
+  });
+
+  document.getElementById('btn-regen-invite')?.addEventListener('click', async () => {
+    if (!confirm('招待コードを再生成しますか？\n古いコードは無効になります。')) return;
+    try {
+      const newCode = await regenerateInviteCode();
+      groupInfo = { ...groupInfo, inviteCode: newCode };
+      render();
+    } catch (e) {
+      console.error(e);
+      alert('再生成に失敗しました。');
+    }
+  });
+
+  document.getElementById('btn-leave-group')?.addEventListener('click', async () => {
+    if (!confirm('このグループを退出しますか？\n退出後は招待コードで再参加できます。')) return;
+    const user = getUser();
+    try {
+      if (activePartyListener) { activePartyListener(); activePartyListener = null; }
+      cleanup();
+      await leaveGroup(user.uid, user.email);
+      historyData = [];
+      groupInfo = null;
+      currentView = 'groupSetup';
+      render();
+    } catch (e) {
+      console.error(e);
+      alert('退出に失敗しました。');
     }
   });
 
