@@ -30,6 +30,8 @@ export async function createGroup(
   customInviteCode?: string,
 ): Promise<Group> {
   const inviteCode = customInviteCode || Math.random().toString(36).substring(2, 8).toUpperCase();
+  const existing = await getDocs(query(collection(db, 'groups'), where('inviteCode', '==', inviteCode)));
+  if (!existing.empty) throw new Error('この招待コードはすでに使われています。別のコードを指定してください。');
   const groupRef = doc(collection(db, 'groups'));
   const groupData = {
     name: groupName,
