@@ -483,7 +483,7 @@ function renderStatsAll() {
 function renderActiveParty() {
   const areas = [...new Set(historyData.map(p => p.areaName).filter(Boolean))];
   const stores = [...new Set(historyData.map(p => p.storeName).filter(Boolean))];
-  const isEditing = historyData.some(p => p.id === partyState.id);
+  const isEditing = historyData.some(p => p._docId === partyState.id);
 
   return `
     <div class="view" id="view-party" style="padding-bottom: 0;">
@@ -634,6 +634,7 @@ function subscribeToParty(partyId) {
   if (activePartyListener) activePartyListener();
   activePartyListener = listenToParty(partyId, (updatedParty) => {
     if (updatedParty.members) {
+      if (JSON.stringify(updatedParty.members) === JSON.stringify(partyState.members)) return;
       partyState.members = updatedParty.members;
       if (currentView === 'party' && activeTab === 'members') render();
     }
