@@ -90,14 +90,6 @@ export async function getGroupInfo() {
   return null;
 }
 
-// Regenerate invite code
-export async function regenerateInviteCode() {
-  if (!activeGroupId) return null;
-  const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-  await updateDoc(doc(db, 'groups', activeGroupId), { inviteCode: newCode });
-  return newCode;
-}
-
 // Leave group (removes uid from memberUids)
 export async function leaveGroup(uid, email) {
   if (!activeGroupId) return;
