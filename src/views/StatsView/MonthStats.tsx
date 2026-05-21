@@ -1,6 +1,7 @@
 import type { Party } from '../../types';
 import { MemberStatsList } from '../../components/MemberStatsList';
 import { useApp } from '../../context/AppContext';
+import { deleteParty } from '../../lib/db';
 
 interface Props {
   historyData: Party[];
@@ -77,7 +78,17 @@ export function MonthStats({ historyData, statsDate, onEditParty }: Props) {
                 <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>¥{(p.totalAmount || 0).toLocaleString()}</span>
               </div>
               {p.summaryText && <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-color)', fontSize: '0.8rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>{p.summaryText}</div>}
-              <button onClick={() => onEditParty(p)} className="btn btn-sm" style={{ marginTop: '0.8rem', width: '100%', border: '1px dashed var(--border-color)', background: 'transparent' }}>📝 編集</button>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem' }}>
+                <button onClick={() => onEditParty(p)} className="btn btn-sm" style={{ flex: 1, border: '1px dashed var(--border-color)', background: 'transparent' }}>📝 編集</button>
+                <button
+                  onClick={async () => {
+                    if (!confirm('この飲み会の記録を削除しますか？')) return;
+                    await deleteParty(p._docId);
+                  }}
+                  className="btn btn-sm"
+                  style={{ border: '1px dashed var(--danger-color)', background: 'transparent', color: 'var(--danger-color)' }}
+                >🗑 削除</button>
+              </div>
             </div>
           );
         })}

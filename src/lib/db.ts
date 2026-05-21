@@ -1,5 +1,5 @@
 import {
-  collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc,
+  collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
   onSnapshot, query, orderBy, where, serverTimestamp, arrayRemove,
   type Unsubscribe,
 } from 'firebase/firestore';
@@ -109,6 +109,10 @@ export async function createParty(initialData: Partial<Party>): Promise<string> 
     updatedAt: serverTimestamp(),
   });
   return docRef.id;
+}
+
+export async function deleteParty(partyId: string): Promise<void> {
+  await deleteDoc(doc(partiesCollection(), String(partyId)));
 }
 
 export async function saveParty(partyData: Party): Promise<void> {
