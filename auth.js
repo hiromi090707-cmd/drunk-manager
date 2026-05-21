@@ -1,16 +1,32 @@
-// Authentication module
-import { auth, provider } from './firebase.js';
+import { auth, provider, db } from './firebase.js';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 let currentUser = null;
 let authReadyResolver;
 export const authReady = new Promise(resolve => { authReadyResolver = resolve; });
 
-// Listen for auth state changes
-onAuthStateChanged(auth, (user) => {
+async function isUserAllowed(email) {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'allowedUsers'));
+    if (!snap.exists()) return false;
+    return (snap.data().emails || []).includes(email);
+  } catch {
+    return false;
+  }
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const allowed = await isUserAllowed(user.email);
+    if (!allowed) {
+      alert('このアプリの使用が許可されていません。');
+      await signOut(auth);
+      return;
+    }
+  }
   currentUser = user;
   authReadyResolver(user);
-  // Dispatch custom event so main.js can react
   window.dispatchEvent(new CustomEvent('auth-changed', { detail: { user } }));
 });
 
@@ -20,18 +36,14 @@ export function getUser() {
 
 export async function loginWithGoogle() {
   try {
-    const result = await signInWithPopup(auth, provider);
-    return result.user;
+    await signInWithPopup(auth, provider);
   } catch (error) {
     console.error('Login failed:', error);
     if (error.code === 'auth/popup-blocked') {
       alert('ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください。');
-    } else if (error.code === 'auth/popup-closed-by-user') {
-      // User closed popup, do nothing
-    } else {
+    } else if (error.code !== 'auth/popup-closed-by-user') {
       alert('ログインに失敗しました。もう一度お試しください。');
     }
-    return null;
   }
 }
 
