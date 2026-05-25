@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { createGroup, joinGroupByCode } from '../lib/db';
+import { createGroup, joinGroupByCode, listenToParties } from '../lib/db';
 import { logout } from '../lib/auth';
 import { auth } from '../firebase';
 import { FIXED_MEMBERS } from '../constants';
@@ -18,6 +18,7 @@ export function GroupSetupView() {
     try {
       const group = await createGroup('いつメン', [...FIXED_MEMBERS], user.uid, user.email ?? '', code || undefined);
       dispatch({ type: 'SET_GROUP', group });
+      listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
       alert(`グループを作成しました！\n\n招待コード: ${group.inviteCode}\n\nこのコードを仲間に共有してください。`);
       dispatch({ type: 'SET_VIEW', view: 'home' });
     } catch {
@@ -32,6 +33,7 @@ export function GroupSetupView() {
     try {
       const group = await joinGroupByCode(code, user.uid, user.email ?? '');
       dispatch({ type: 'SET_GROUP', group });
+      listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
       dispatch({ type: 'SET_VIEW', view: 'home' });
     } catch (error: unknown) {
       alert(error instanceof Error ? error.message : 'グループへの参加に失敗しました。');
@@ -75,7 +77,7 @@ export function GroupSetupView() {
           className="input-field w-full mb-3 text-center"
           style={{ textTransform: 'uppercase', letterSpacing: '0.3rem', fontSize: '1.2rem' }}
           placeholder="招待コード"
-          maxLength={6}
+          maxLength={16}
         />
         <button
           onClick={handleJoinGroup}

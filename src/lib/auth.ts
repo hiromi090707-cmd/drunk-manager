@@ -7,7 +7,8 @@ export async function isUserAllowed(email: string): Promise<boolean> {
     const snap = await getDoc(doc(db, 'config', 'allowedUsers'));
     if (!snap.exists()) return false;
     return ((snap.data().emails as string[]) || []).includes(email);
-  } catch {
+  } catch (err) {
+    console.error('許可ユーザー一覧の取得に失敗:', err);
     return false;
   }
 }

@@ -52,7 +52,8 @@ export function App() {
         } else {
           dispatch({ type: 'SET_VIEW', view: 'groupSetup' });
         }
-      } catch {
+      } catch (err) {
+        console.error('グループ情報の取得に失敗:', err);
         dispatch({ type: 'SET_VIEW', view: 'groupSetup' });
       }
     });

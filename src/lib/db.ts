@@ -120,7 +120,10 @@ export async function deleteParty(partyId: string): Promise<void> {
 
 export async function saveParty(partyData: Party): Promise<void> {
   const partyRef = doc(partiesCollection(), String(partyData.id ?? partyData._docId));
-  await setDoc(partyRef, { ...partyData, updatedAt: serverTimestamp() }, { merge: true });
+  // _docIdはFirestoreのドキュメントIDと冗長なので保存しない
+  const { _docId, ...rest } = partyData;
+  void _docId;
+  await setDoc(partyRef, { ...rest, updatedAt: serverTimestamp() }, { merge: true });
 }
 
 export function listenToParties(callback: (parties: Party[]) => void): Unsubscribe {
@@ -156,7 +159,9 @@ export async function migrateLocalData(): Promise<number> {
     const partyRef = doc(col, String(party.id ?? party._docId));
     const existing = await getDoc(partyRef);
     if (!existing.exists()) {
-      await setDoc(partyRef, { ...party, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), migratedFromLocal: true });
+      const { _docId, ...rest } = party;
+      void _docId;
+      await setDoc(partyRef, { ...rest, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), migratedFromLocal: true });
       migrated++;
     }
   }

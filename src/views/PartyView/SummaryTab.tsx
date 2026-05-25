@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { PartyState } from '../../types';
-import { getClaudeApiKey, saveClaudeApiKey } from '../../lib/db';
+import { saveClaudeApiKey } from '../../lib/db';
 import { summarizePartyConversation } from '../../lib/claude';
 import { CLAUDE_MODEL } from '../../constants';
+import { useApp } from '../../context/AppContext';
 
 interface Props {
   partyState: PartyState;
@@ -10,26 +11,56 @@ interface Props {
 }
 
 export function SummaryTab({ partyState, onUpdate }: Props) {
-  const [apiKey, setApiKey] = useState('');
+  const { state, dispatch } = useApp();
+  const storedKey = state.groupInfo?.claudeApiKey || state.groupInfo?.geminiApiKey || '';
+  const [apiKey, setApiKey] = useState(storedKey);
   const [loading, setLoading] = useState(false);
 
+  // groupInfoが後から読み込まれた場合に追従する（ユーザーが編集中でなければ）
   useEffect(() => {
-    getClaudeApiKey().then((key) => { if (key) setApiKey(key); });
-  }, []);
+    if (storedKey && !apiKey) setApiKey(storedKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedKey]);
 
-  async function handleApiKeyChange(key: string) {
-    setApiKey(key);
-    await saveClaudeApiKey(key).catch(console.error);
+  async function persistApiKey() {
+    const trimmed = apiKey.trim();
+    if (trimmed === storedKey) return;
+    try {
+      await saveClaudeApiKey(trimmed);
+      if (state.groupInfo) {
+        dispatch({ type: 'SET_GROUP', group: { ...state.groupInfo, claudeApiKey: trimmed } });
+      }
+    } catch (err) {
+      console.error('APIキーの保存に失敗:', err);
+      alert('APIキーの保存に失敗しました。ネットワーク接続を確認してください。');
+    }
   }
 
   async function handleGenerate() {
-    if (!apiKey) return alert('Anthropic APIキーを設定してください。');
+    const key = apiKey.trim();
+    if (!key) return alert('Anthropic APIキーを設定してください。');
+    if (!key.startsWith('sk-ant-')) {
+      return alert('APIキーの形式が正しくありません。sk-ant-で始まるキーを入力してください。');
+    }
+    if (!partyState.summary.rawText.trim()) {
+      return alert('文字起こしテキストを入力してください。');
+    }
     setLoading(true);
     try {
-      const result = await summarizePartyConversation(partyState.summary.rawText, apiKey);
+      const result = await summarizePartyConversation(partyState.summary.rawText, key);
       onUpdate({ ...partyState, summary: { ...partyState.summary, result } });
-    } catch {
-      alert('要約に失敗しました。APIキーが正しいか確認してください。');
+    } catch (err) {
+      console.error('要約に失敗:', err);
+      const msg = err instanceof Error ? err.message : '';
+      if (/401|invalid.*api.*key|authentication/i.test(msg)) {
+        alert('APIキーが無効です。Anthropic APIキーを確認してください。');
+      } else if (/429|rate.*limit/i.test(msg)) {
+        alert('APIのレート制限に達しました。しばらく待ってから再試行してください。');
+      } else if (/network|fetch|cors/i.test(msg)) {
+        alert('ネットワークエラーです。接続を確認してください。');
+      } else {
+        alert(`要約に失敗しました。${msg ? `\n${msg}` : ''}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -49,7 +80,8 @@ export function SummaryTab({ partyState, onUpdate }: Props) {
           style={{ fontSize: '0.8rem', padding: '0.4rem' }}
           placeholder="sk-ant-..."
           value={apiKey}
-          onChange={(e) => handleApiKeyChange(e.target.value.trim())}
+          onChange={(e) => setApiKey(e.target.value)}
+          onBlur={persistApiKey}
         />
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.65rem', marginTop: '0.25rem' }}>
           一人が設定すれば全員使えます（モデル: {CLAUDE_MODEL}）
