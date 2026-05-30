@@ -55,7 +55,7 @@ export function HomeView() {
         }}>
           Drunk
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', letterSpacing: '0.2em' }}>飲 み 会 マ ネ ー ジ ャ ー</p>
+        <p className="text-muted" style={{ fontSize: '0.8rem', letterSpacing: '0.2em' }}>飲 み 会 マ ネ ー ジ ャ ー</p>
       </div>
 
       <div className="glass text-center p-4 mt-8">
@@ -66,7 +66,7 @@ export function HomeView() {
         >
           🍺 飲み会スタート
         </button>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>いつものメンバーで新しい記録を始めます</p>
+        <p className="text-muted" style={{ fontSize: '0.8rem' }}>いつものメンバーで新しい記録を始めます</p>
       </div>
 
       <div className="glass text-center p-4 mt-4">
@@ -77,7 +77,7 @@ export function HomeView() {
         >
           📊 データと集計を見る
         </button>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', fontSize: '0.8rem' }}>
+        <p className="text-muted" style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
           過去 {state.historyData.length} 回の記録があります
         </p>
       </div>
@@ -85,7 +85,7 @@ export function HomeView() {
       <div className="glass p-3 mt-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {user?.photoURL && <img src={user.photoURL} style={{ width: 28, height: 28, borderRadius: '50%' }} />}
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{user?.displayName ?? ''}</span>
+          <span className="text-muted" style={{ fontSize: '0.8rem' }}>{user?.displayName ?? ''}</span>
         </div>
         <button
           onClick={handleLogout}
@@ -98,8 +98,8 @@ export function HomeView() {
 
       {state.groupInfo?.inviteCode && (
         <div className="glass p-3 mt-4">
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', marginBottom: '0.2rem' }}>招待コード</p>
-          <span style={{ letterSpacing: '0.2rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>
+          <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '0.2rem' }}>招待コード</p>
+          <span className="text-accent" style={{ letterSpacing: '0.2rem', fontWeight: 'bold' }}>
             {state.groupInfo.inviteCode}
           </span>
           <button

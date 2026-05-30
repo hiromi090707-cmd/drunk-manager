@@ -31,17 +31,17 @@ export function ShareChoiceView() {
     <div className="view">
       <div className="text-center mt-4 mb-4">
         <h2 style={{ fontSize: '1.2rem' }}>共有されたテキストの追加</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>どこに追加するか選んでください</p>
+        <p className="text-muted" style={{ fontSize: '0.8rem' }}>どこに追加するか選んでください</p>
       </div>
-      <div className="glass p-3 mb-4" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', maxHeight: 100, overflowY: 'auto' }}>
+      <div className="glass p-3 mb-4 text-muted" style={{ fontSize: '0.8rem', maxHeight: 100, overflowY: 'auto' }}>
         {sharedText}
       </div>
       <button onClick={handleShareNew} className="btn btn-primary w-full p-3 mb-4" style={{ fontSize: '1.125rem' }}>
         🍺 新しく飲み会を始める
       </button>
-      <h3 style={{ color: 'var(--text-secondary)', marginBottom: '0.75rem', marginTop: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>最近の履歴に紐付ける</h3>
+      <h3 className="text-muted" style={{ marginBottom: '0.75rem', marginTop: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>最近の履歴に紐付ける</h3>
       <div className="flex flex-col gap-2">
-        {recentParties.length === 0 && <p className="text-center" style={{ color: 'var(--text-secondary)' }}>履歴がありません</p>}
+        {recentParties.length === 0 && <p className="text-center text-muted">履歴がありません</p>}
         {recentParties.map((p) => {
           const date = new Date(p.startTime).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
           return (
@@ -52,7 +52,7 @@ export function ShareChoiceView() {
               style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', border: '1px solid var(--border-color)', borderRadius: 8 }}
             >
               <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{date} {partyName(p)}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{formatYen(p.totalAmount || 0)}</div>
+              <div className="text-muted" style={{ fontSize: '0.8rem' }}>{formatYen(p.totalAmount || 0)}</div>
             </button>
           );
         })}

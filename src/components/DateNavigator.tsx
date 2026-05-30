@@ -7,9 +7,9 @@ interface Props {
 export function DateNavigator({ label, onPrev, onNext }: Props) {
   return (
     <div className="flex justify-between items-center mb-4 glass p-2">
-      <button onClick={onPrev} className="btn btn-sm" style={{ border: 'none', background: 'transparent' }}>◀</button>
+      <button onClick={onPrev} className="btn btn-sm btn-ghost">◀</button>
       <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{label}</span>
-      <button onClick={onNext} className="btn btn-sm" style={{ border: 'none', background: 'transparent' }}>▶</button>
+      <button onClick={onNext} className="btn btn-sm btn-ghost">▶</button>
     </div>
   );
 }

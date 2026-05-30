@@ -53,7 +53,7 @@ export function MembersTab({ partyState, onUpdate }: Props) {
 
   return (
     <div style={{ paddingBottom: '1rem' }}>
-      <p className="text-center mb-4" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+      <p className="text-center mb-4 text-muted" style={{ fontSize: '0.8rem' }}>
         各ドリンクをタップで＋１ / 長押しで－１
       </p>
       <div className="flex flex-col gap-3">
@@ -61,7 +61,7 @@ export function MembersTab({ partyState, onUpdate }: Props) {
           <div key={member.id} className="glass p-3">
             <div className="flex justify-between items-center mb-3" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
               <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{member.name}</span>
-              <span style={{ color: 'var(--accent-color)', fontWeight: 700 }}>計 {member.totalDrinks} 杯</span>
+              <span className="text-accent" style={{ fontWeight: 700 }}>計 {member.totalDrinks} 杯</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
               {DRINK_TYPES.map((drink) => {
@@ -85,7 +85,7 @@ export function MembersTab({ partyState, onUpdate }: Props) {
                     onTouchMove={handlePressCancel}
                   >
                     <span style={{ fontSize: '1.5rem', pointerEvents: 'none' }}>{drink.emoji}</span>
-                    <span style={{ fontSize: '0.65rem', pointerEvents: 'none', color: 'var(--text-secondary)', lineHeight: 1 }}>{drink.name}</span>
+                    <span className="text-muted" style={{ fontSize: '0.65rem', pointerEvents: 'none', lineHeight: 1 }}>{drink.name}</span>
                     <span style={{ fontWeight: 700, color: count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', pointerEvents: 'none', fontSize: '1.1rem' }}>{count}</span>
                   </button>
                 );

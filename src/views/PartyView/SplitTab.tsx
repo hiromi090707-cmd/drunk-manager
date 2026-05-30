@@ -46,8 +46,8 @@ export function SplitTab({ partyState, onUpdate }: Props) {
           <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>¥</span>
           <input
             type="number"
-            className="input-field"
-            style={{ fontSize: '2rem', fontWeight: 700, width: 150, textAlign: 'center', color: 'var(--accent-color)' }}
+            className="input-field text-accent"
+            style={{ fontSize: '2rem', fontWeight: 700, width: 150, textAlign: 'center' }}
             placeholder="0"
             value={partyState.split.totalAmount || ''}
             onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
@@ -76,14 +76,14 @@ export function SplitTab({ partyState, onUpdate }: Props) {
               );
             })}
           </div>
-          <div className="flex justify-between mt-4" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          <div className="flex justify-between mt-4 text-muted" style={{ fontSize: '0.9rem' }}>
             <span>集金合計: {formatYen(result.collectedTotal)}</span>
             <span>余り: {formatYen(result.excess)}</span>
           </div>
         </div>
       )}
 
-      <h2 className="mb-3 mt-4" style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>傾斜配分（支払い割合）</h2>
+      <h2 className="mb-3 mt-4 text-muted" style={{ fontSize: '1rem' }}>傾斜配分（支払い割合）</h2>
       <div className="flex flex-col gap-3">
         {partyState.members.map((m) => (
           <div key={m.id} className="glass p-3 flex justify-between items-center">

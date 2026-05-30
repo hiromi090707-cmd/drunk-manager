@@ -71,7 +71,7 @@ export function SummaryTab({ partyState, onUpdate }: Props) {
       <h2 className="text-center mb-3" style={{ fontSize: '1.1rem' }}>会話の要約</h2>
 
       <div className="mb-3">
-        <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+        <label className="text-muted" style={{ fontSize: '0.8rem' }}>
           Anthropic APIキー（グループ共有）
         </label>
         <input
@@ -83,13 +83,13 @@ export function SummaryTab({ partyState, onUpdate }: Props) {
           onChange={(e) => setApiKey(e.target.value)}
           onBlur={persistApiKey}
         />
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.65rem', marginTop: '0.25rem' }}>
+        <p className="text-muted" style={{ fontSize: '0.65rem', marginTop: '0.25rem' }}>
           一人が設定すれば全員使えます（モデル: {CLAUDE_MODEL}）
         </p>
       </div>
 
       <div className="mb-3">
-        <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>文字起こしテキスト</label>
+        <label className="text-muted" style={{ fontSize: '0.8rem' }}>文字起こしテキスト</label>
         <textarea
           className="input-field w-full mt-1"
           style={{ height: 100, resize: 'vertical', fontSize: '0.8rem' }}
@@ -108,7 +108,7 @@ export function SummaryTab({ partyState, onUpdate }: Props) {
       </button>
 
       <div className="mb-3">
-        <label style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>要約結果 (手動編集可)</label>
+        <label className="text-muted" style={{ fontSize: '0.8rem' }}>要約結果 (手動編集可)</label>
         <textarea
           className="input-field w-full mt-1"
           style={{ minHeight: 150, background: 'rgba(0,0,0,0.3)', fontSize: '0.9rem' }}

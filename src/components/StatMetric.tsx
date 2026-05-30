@@ -11,11 +11,11 @@ interface Props {
 export function StatMetric({ label, value, accent, caption, size = 'lg' }: Props) {
   return (
     <div className="text-center">
-      <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{label}</div>
-      <div style={{ fontSize: size === 'lg' ? '2rem' : '1.5rem', fontWeight: 'bold', color: accent ? 'var(--accent-color)' : undefined }}>
+      <div className="text-muted" style={{ fontSize: '0.8rem' }}>{label}</div>
+      <div className={accent ? 'text-accent' : undefined} style={{ fontSize: size === 'lg' ? '2rem' : '1.5rem', fontWeight: 'bold' }}>
         {value}
       </div>
-      {caption && <div style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.9rem' }}>{caption}</div>}
+      {caption && <div className="text-muted" style={{ marginTop: '0.25rem', fontSize: '0.9rem' }}>{caption}</div>}
     </div>
   );
 }

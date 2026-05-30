@@ -36,9 +36,9 @@ export function DayStats({ historyData, statsDate, onEditParty, onDeleteParty }:
         <StatMetric label="この日の利用額" value={formatYen(totalSpent)} accent caption={`開催回数: ${dayHistory.length}回`} />
       </div>
       <MemberStatsList historyArray={dayHistory} />
-      <h3 style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>この日の履歴</h3>
+      <h3 className="text-muted" style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>この日の履歴</h3>
       <div className="flex flex-col gap-3 mb-4">
-        {dayHistory.length === 0 && <p className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>記録がありません</p>}
+        {dayHistory.length === 0 && <p className="text-center text-muted" style={{ fontSize: '0.9rem' }}>記録がありません</p>}
         {sorted.map((p) => {
           const time = new Date(p.startTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
           return (

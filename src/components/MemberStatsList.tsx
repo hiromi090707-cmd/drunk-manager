@@ -46,15 +46,15 @@ export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
 
   return (
     <div className="glass p-3 mb-4">
-      <h3 className="mb-3 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>メンバー別 集計</h3>
+      <h3 className="mb-3 text-center text-sm text-muted">メンバー別 集計</h3>
       <div className="flex flex-col gap-3">
         {statsArray.map((m, i) => (
           <div key={m.name} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             <div className="flex justify-between items-center mb-1">
               <span className="font-bold">{medals[i] ?? ' '} {m.name}</span>
-              <span className="font-bold" style={{ color: 'var(--accent-color)' }}>{formatYen(m.amount)}</span>
+              <span className="font-bold text-accent">{formatYen(m.amount)}</span>
             </div>
-            <div className="flex justify-between text-sm" style={{ color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '0.3rem 0.5rem', borderRadius: 4 }}>
+            <div className="flex justify-between text-sm text-muted" style={{ background: 'rgba(0,0,0,0.2)', padding: '0.3rem 0.5rem', borderRadius: 4 }}>
               <div className="flex gap-2">
                 <span>🍺{m.drinks.beer}</span>
                 <span>🥃{m.drinks.highball}</span>

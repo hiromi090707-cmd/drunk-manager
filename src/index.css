@@ -97,6 +97,13 @@ body {
     font-size: 0.85rem;
   }
 
+  .btn-ghost { border: none; background: transparent; }
+  .btn-dashed { border: 1px dashed var(--border-color); background: transparent; }
+  .btn-dashed-danger { border: 1px dashed var(--danger-color); background: transparent; color: var(--danger-color); }
+
+  .text-muted { color: var(--text-secondary); }
+  .text-accent { color: var(--accent-color); }
+
   .input-field {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--border-color);
