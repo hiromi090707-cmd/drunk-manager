@@ -1,5 +1,6 @@
 import type { PartyState, SplitResult } from '../../types';
 import { SPLIT_ROLES } from '../../constants';
+import { formatYen } from '../../lib/format';
 
 interface Props {
   partyState: PartyState;
@@ -69,15 +70,15 @@ export function SplitTab({ partyState, onUpdate }: Props) {
                     <span style={{ fontSize: '0.7rem', color: roleDef.color }}>{roleDef.label}（計{m.totalDrinks}杯）</span>
                   </div>
                   <span style={{ fontSize: '1.25rem', fontWeight: 700, color: amount > 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                    ¥{amount.toLocaleString()}
+                    {formatYen(amount)}
                   </span>
                 </div>
               );
             })}
           </div>
           <div className="flex justify-between mt-4" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            <span>集金合計: ¥{result.collectedTotal.toLocaleString()}</span>
-            <span>余り: ¥{result.excess.toLocaleString()}</span>
+            <span>集金合計: {formatYen(result.collectedTotal)}</span>
+            <span>余り: {formatYen(result.excess)}</span>
           </div>
         </div>
       )}

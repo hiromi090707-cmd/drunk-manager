@@ -1,5 +1,6 @@
 import type { Party } from '../types';
 import { FIXED_MEMBERS } from '../constants';
+import { formatYen } from '../lib/format';
 
 interface MemberStat {
   name: string;
@@ -49,7 +50,7 @@ export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
           <div key={m.name} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             <div className="flex justify-between items-center mb-1">
               <span className="font-bold">{medals[i] ?? ' '} {m.name}</span>
-              <span className="font-bold" style={{ color: 'var(--accent-color)' }}>¥{m.amount.toLocaleString()}</span>
+              <span className="font-bold" style={{ color: 'var(--accent-color)' }}>{formatYen(m.amount)}</span>
             </div>
             <div className="flex justify-between text-sm" style={{ color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '0.3rem 0.5rem', borderRadius: 4 }}>
               <div className="flex gap-2">
