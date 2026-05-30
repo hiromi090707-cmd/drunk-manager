@@ -1,6 +1,9 @@
 import type { Party } from '../../types';
 import { MemberStatsList } from '../../components/MemberStatsList';
 import { useApp } from '../../context/AppContext';
+import { DateNavigator } from '../../components/DateNavigator';
+import { StatMetric } from '../../components/StatMetric';
+import { formatYen } from '../../lib/format';
 
 interface Props {
   historyData: Party[];
@@ -24,15 +27,9 @@ export function YearStats({ historyData, statsDate }: Props) {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4 glass p-2">
-        <button onClick={() => changeYear(-1)} className="btn btn-sm" style={{ border: 'none', background: 'transparent' }}>◀</button>
-        <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{y}年</span>
-        <button onClick={() => changeYear(1)} className="btn btn-sm" style={{ border: 'none', background: 'transparent' }}>▶</button>
-      </div>
-      <div className="text-center mb-4">
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{y}年の総利用額</div>
-        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>¥{totalSpent.toLocaleString()}</div>
-        <div style={{ color: 'var(--text-secondary)', marginTop: '0.25rem', fontSize: '0.9rem' }}>開催回数: {yearHistory.length}回</div>
+      <DateNavigator label={`${y}年`} onPrev={() => changeYear(-1)} onNext={() => changeYear(1)} />
+      <div className="mb-4">
+        <StatMetric label={`${y}年の総利用額`} value={formatYen(totalSpent)} accent caption={`開催回数: ${yearHistory.length}回`} />
       </div>
       <MemberStatsList historyArray={yearHistory} />
       <div className="glass p-4 mb-4">
