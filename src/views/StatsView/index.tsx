@@ -3,6 +3,7 @@ import { DayStats, buildEditPartyState } from './DayStats';
 import { MonthStats } from './MonthStats';
 import { YearStats } from './YearStats';
 import { AllStats } from './AllStats';
+import { deleteParty } from '../../lib/db';
 import type { Party } from '../../types';
 
 const STAT_TABS = [
@@ -22,6 +23,11 @@ export function StatsView() {
     dispatch({ type: 'SET_PARTY_STATE', party: partyState });
     dispatch({ type: 'SET_PARTY_TAB', tab: 'summary' });
     dispatch({ type: 'SET_VIEW', view: 'party' });
+  }
+
+  async function handleDeleteParty(party: Party) {
+    if (!confirm('この飲み会の記録を削除しますか？')) return;
+    await deleteParty(party._docId);
   }
 
   return (
@@ -49,8 +55,8 @@ export function StatsView() {
         ))}
       </div>
 
-      {activeStatsTab === 'day' && <DayStats historyData={historyData} statsDate={statsDate} onEditParty={handleEditParty} />}
-      {activeStatsTab === 'month' && <MonthStats historyData={historyData} statsDate={statsDate} onEditParty={handleEditParty} />}
+      {activeStatsTab === 'day' && <DayStats historyData={historyData} statsDate={statsDate} onEditParty={handleEditParty} onDeleteParty={handleDeleteParty} />}
+      {activeStatsTab === 'month' && <MonthStats historyData={historyData} statsDate={statsDate} onEditParty={handleEditParty} onDeleteParty={handleDeleteParty} />}
       {activeStatsTab === 'year' && <YearStats historyData={historyData} statsDate={statsDate} />}
       {activeStatsTab === 'all' && <AllStats historyData={historyData} />}
     </div>
