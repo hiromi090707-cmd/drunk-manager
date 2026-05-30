@@ -74,8 +74,8 @@ export function PartyView() {
           <div style={{ flex: 1 }}>
             <button
               onClick={handleEndParty}
-              className="btn btn-sm"
-              style={{ width: '100%', color: 'var(--accent-color)', fontWeight: 'bold' }}
+              className="btn btn-sm text-accent"
+              style={{ width: '100%', fontWeight: 'bold' }}
             >
               保存
             </button>

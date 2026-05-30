@@ -46,7 +46,7 @@ export function GroupSetupView() {
         <h1 style={{ fontSize: '2rem', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           グループ設定
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>グループを作成するか、招待コードで参加してください</p>
+        <p className="text-muted">グループを作成するか、招待コードで参加してください</p>
       </div>
 
       <div className="glass p-4 mb-4" style={{ width: '100%', maxWidth: 320 }}>
@@ -60,7 +60,7 @@ export function GroupSetupView() {
           placeholder="招待コード（省略可）"
           maxLength={16}
         />
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', textAlign: 'center', marginBottom: '0.75rem' }}>
+        <p className="text-muted" style={{ fontSize: '0.75rem', textAlign: 'center', marginBottom: '0.75rem' }}>
           空欄の場合は自動生成されます
         </p>
         <button onClick={handleCreateGroup} className="btn btn-primary w-full p-3">
@@ -90,8 +90,7 @@ export function GroupSetupView() {
 
       <button
         onClick={logout}
-        className="btn btn-sm mt-4"
-        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}
+        className="btn btn-sm mt-4 btn-ghost text-muted"
       >
         ログアウト
       </button>

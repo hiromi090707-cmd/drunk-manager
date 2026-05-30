@@ -16,11 +16,11 @@ export function LoginView() {
         }}>
           Drunk
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', letterSpacing: '0.2em' }}>飲 み 会 マ ネ ー ジ ャ ー</p>
+        <p className="text-muted" style={{ fontSize: '0.8rem', letterSpacing: '0.2em' }}>飲 み 会 マ ネ ー ジ ャ ー</p>
       </div>
 
       <div className="glass text-center p-4" style={{ width: '100%', maxWidth: 320 }}>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+        <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
           メンバー全員で飲み会の記録を共有できます。
         </p>
         <button
@@ -36,7 +36,7 @@ export function LoginView() {
           </svg>
           Googleでログイン
         </button>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '1rem', fontSize: '0.7rem' }}>
+        <p className="text-muted" style={{ marginTop: '1rem', fontSize: '0.7rem' }}>
           🔒 認証された仲間だけがデータにアクセスできます
         </p>
       </div>

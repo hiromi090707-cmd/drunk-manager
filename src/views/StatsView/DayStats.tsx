@@ -1,7 +1,6 @@
-import type { Party, PartyState } from '../../types';
+import type { Party } from '../../types';
 import { MemberStatsList } from '../../components/MemberStatsList';
 import { useApp } from '../../context/AppContext';
-import { FIXED_MEMBERS, SPLIT_ROLES } from '../../constants';
 import { DateNavigator } from '../../components/DateNavigator';
 import { StatMetric } from '../../components/StatMetric';
 import { PartyHistoryCard } from '../../components/PartyHistoryCard';
@@ -37,9 +36,9 @@ export function DayStats({ historyData, statsDate, onEditParty, onDeleteParty }:
         <StatMetric label="この日の利用額" value={formatYen(totalSpent)} accent caption={`開催回数: ${dayHistory.length}回`} />
       </div>
       <MemberStatsList historyArray={dayHistory} />
-      <h3 style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>この日の履歴</h3>
+      <h3 className="text-muted" style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>この日の履歴</h3>
       <div className="flex flex-col gap-3 mb-4">
-        {dayHistory.length === 0 && <p className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>記録がありません</p>}
+        {dayHistory.length === 0 && <p className="text-center text-muted" style={{ fontSize: '0.9rem' }}>記録がありません</p>}
         {sorted.map((p) => {
           const time = new Date(p.startTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
           return (
@@ -55,18 +54,4 @@ export function DayStats({ historyData, statsDate, onEditParty, onDeleteParty }:
       </div>
     </div>
   );
-}
-
-export function buildEditPartyState(party: Party): PartyState {
-  const roles = { ...party.splitRoles };
-  if (Object.keys(roles).length === 0) {
-    FIXED_MEMBERS.forEach((m) => (roles[m.id] = SPLIT_ROLES[1].id));
-  }
-  return {
-    id: party._docId, areaName: party.areaName || '', storeName: party.storeName || '',
-    startTime: party.startTime, endTime: party.endTime,
-    members: party.members,
-    split: { totalAmount: party.totalAmount || 0, roles },
-    summary: { rawText: party.summaryRaw || '', result: party.summaryText || '' },
-  };
 }

@@ -1,6 +1,7 @@
 import type { Party } from '../types';
-import { FIXED_MEMBERS } from '../constants';
 import { formatYen } from '../lib/format';
+import { emptyDrinks, rosterOf } from '../lib/party';
+import { useApp } from '../context/AppContext';
 
 interface MemberStat {
   name: string;
@@ -9,10 +10,10 @@ interface MemberStat {
   amount: number;
 }
 
-export function getMemberStats(historyArray: Party[]): MemberStat[] {
+export function getMemberStats(historyArray: Party[], roster: { id: string; name: string }[]): MemberStat[] {
   const stats: Record<string, MemberStat> = {};
-  FIXED_MEMBERS.forEach((m) => {
-    stats[m.id] = { name: m.name, totalDrinks: 0, drinks: { beer: 0, highball: 0, sour: 0, other: 0 }, amount: 0 };
+  roster.forEach((m) => {
+    stats[m.id] = { name: m.name, totalDrinks: 0, drinks: emptyDrinks(), amount: 0 };
   });
 
   historyArray.forEach((p) => {
@@ -37,22 +38,23 @@ export function getMemberStats(historyArray: Party[]): MemberStat[] {
 }
 
 export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
-  const statsArray = getMemberStats(historyArray);
+  const { state } = useApp();
+  const statsArray = getMemberStats(historyArray, rosterOf(state.groupInfo));
   if (statsArray.every((m) => m.amount === 0 && m.totalDrinks === 0)) return null;
 
   const medals = ['🥇', '🥈', '🥉'];
 
   return (
     <div className="glass p-3 mb-4">
-      <h3 className="mb-3 text-center text-sm" style={{ color: 'var(--text-secondary)' }}>メンバー別 集計</h3>
+      <h3 className="mb-3 text-center text-sm text-muted">メンバー別 集計</h3>
       <div className="flex flex-col gap-3">
         {statsArray.map((m, i) => (
           <div key={m.name} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             <div className="flex justify-between items-center mb-1">
               <span className="font-bold">{medals[i] ?? ' '} {m.name}</span>
-              <span className="font-bold" style={{ color: 'var(--accent-color)' }}>{formatYen(m.amount)}</span>
+              <span className="font-bold text-accent">{formatYen(m.amount)}</span>
             </div>
-            <div className="flex justify-between text-sm" style={{ color: 'var(--text-secondary)', background: 'rgba(0,0,0,0.2)', padding: '0.3rem 0.5rem', borderRadius: 4 }}>
+            <div className="flex justify-between text-sm text-muted" style={{ background: 'rgba(0,0,0,0.2)', padding: '0.3rem 0.5rem', borderRadius: 4 }}>
               <div className="flex gap-2">
                 <span>🍺{m.drinks.beer}</span>
                 <span>🥃{m.drinks.highball}</span>

@@ -1,8 +1,5 @@
 import { useApp } from '../context/AppContext';
-import { createParty } from '../lib/db';
-import { FIXED_MEMBERS, SPLIT_ROLES } from '../constants';
-import type { PartyState } from '../types';
-import { buildEditPartyState } from './StatsView/DayStats';
+import { buildEditPartyState, createNewParty, rosterOf } from '../lib/party';
 import { formatYen, partyName } from '../lib/format';
 
 export function ShareChoiceView() {
@@ -11,18 +8,8 @@ export function ShareChoiceView() {
   const recentParties = [...historyData].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5);
 
   async function handleShareNew() {
-    const roles: Record<string, number> = {};
-    FIXED_MEMBERS.forEach((m) => (roles[m.id] = SPLIT_ROLES[1].id));
-    const startTime = new Date().toISOString();
-    const initialMembers = FIXED_MEMBERS.map((m) => ({ ...m, drinks: { beer: 0, highball: 0, sour: 0, other: 0 }, totalDrinks: 0 }));
     try {
-      const partyId = await createParty({ areaName: '', storeName: '', startTime, members: initialMembers, totalAmount: 0, splitRoles: roles });
-      const newParty: PartyState = {
-        id: partyId, areaName: '', storeName: '', startTime,
-        members: initialMembers,
-        split: { totalAmount: 0, roles },
-        summary: { rawText: sharedText, result: '' },
-      };
+      const newParty = await createNewParty(rosterOf(state.groupInfo), sharedText);
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'summary' });
       dispatch({ type: 'SET_VIEW', view: 'party' });
@@ -44,17 +31,17 @@ export function ShareChoiceView() {
     <div className="view">
       <div className="text-center mt-4 mb-4">
         <h2 style={{ fontSize: '1.2rem' }}>共有されたテキストの追加</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>どこに追加するか選んでください</p>
+        <p className="text-muted" style={{ fontSize: '0.8rem' }}>どこに追加するか選んでください</p>
       </div>
-      <div className="glass p-3 mb-4" style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', maxHeight: 100, overflowY: 'auto' }}>
+      <div className="glass p-3 mb-4 text-muted" style={{ fontSize: '0.8rem', maxHeight: 100, overflowY: 'auto' }}>
         {sharedText}
       </div>
       <button onClick={handleShareNew} className="btn btn-primary w-full p-3 mb-4" style={{ fontSize: '1.125rem' }}>
         🍺 新しく飲み会を始める
       </button>
-      <h3 style={{ color: 'var(--text-secondary)', marginBottom: '0.75rem', marginTop: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>最近の履歴に紐付ける</h3>
+      <h3 className="text-muted" style={{ marginBottom: '0.75rem', marginTop: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>最近の履歴に紐付ける</h3>
       <div className="flex flex-col gap-2">
-        {recentParties.length === 0 && <p className="text-center" style={{ color: 'var(--text-secondary)' }}>履歴がありません</p>}
+        {recentParties.length === 0 && <p className="text-center text-muted">履歴がありません</p>}
         {recentParties.map((p) => {
           const date = new Date(p.startTime).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
           return (
@@ -65,7 +52,7 @@ export function ShareChoiceView() {
               style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', border: '1px solid var(--border-color)', borderRadius: 8 }}
             >
               <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{date} {partyName(p)}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{formatYen(p.totalAmount || 0)}</div>
+              <div className="text-muted" style={{ fontSize: '0.8rem' }}>{formatYen(p.totalAmount || 0)}</div>
             </button>
           );
         })}

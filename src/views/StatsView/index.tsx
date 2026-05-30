@@ -1,8 +1,9 @@
 import { useApp } from '../../context/AppContext';
-import { DayStats, buildEditPartyState } from './DayStats';
+import { DayStats } from './DayStats';
 import { MonthStats } from './MonthStats';
 import { YearStats } from './YearStats';
 import { AllStats } from './AllStats';
+import { buildEditPartyState } from '../../lib/party';
 import { deleteParty } from '../../lib/db';
 import type { Party } from '../../types';
 

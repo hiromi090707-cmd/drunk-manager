@@ -45,7 +45,7 @@ export function MonthStats({ historyData, statsDate, onEditParty, onDeleteParty 
       </div>
       <MemberStatsList historyArray={monthHistory} />
       <div className="glass p-3 mb-4">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, textAlign: 'center', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+        <div className="text-muted" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, textAlign: 'center', marginBottom: '0.5rem', fontSize: '0.8rem' }}>
           {['日','月','火','水','木','金','土'].map((d) => <div key={d}>{d}</div>)}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, textAlign: 'center' }}>
@@ -61,9 +61,9 @@ export function MonthStats({ historyData, statsDate, onEditParty, onDeleteParty 
           })}
         </div>
       </div>
-      <h3 style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.9rem' }}>{m + 1}月の履歴</h3>
+      <h3 className="text-muted" style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>{m + 1}月の履歴</h3>
       <div className="flex flex-col gap-3 mb-4">
-        {monthHistory.length === 0 && <p className="text-center" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>記録がありません</p>}
+        {monthHistory.length === 0 && <p className="text-center text-muted" style={{ fontSize: '0.9rem' }}>記録がありません</p>}
         {sorted.map((p) => {
           const d = new Date(p.startTime);
           return (
