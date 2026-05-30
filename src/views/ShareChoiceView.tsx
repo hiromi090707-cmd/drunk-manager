@@ -3,6 +3,7 @@ import { createParty } from '../lib/db';
 import { FIXED_MEMBERS, SPLIT_ROLES } from '../constants';
 import type { PartyState } from '../types';
 import { buildEditPartyState } from './StatsView/DayStats';
+import { formatYen, partyName } from '../lib/format';
 
 export function ShareChoiceView() {
   const { state, dispatch } = useApp();
@@ -63,8 +64,8 @@ export function ShareChoiceView() {
               className="btn text-left"
               style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', border: '1px solid var(--border-color)', borderRadius: 8 }}
             >
-              <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{date} {p.storeName || p.areaName || '名もなき飲み会'}</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>¥{(p.totalAmount || 0).toLocaleString()}</div>
+              <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{date} {partyName(p)}</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{formatYen(p.totalAmount || 0)}</div>
             </button>
           );
         })}
