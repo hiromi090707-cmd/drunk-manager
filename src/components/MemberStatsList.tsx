@@ -1,6 +1,7 @@
 import type { Party } from '../types';
 import { FIXED_MEMBERS } from '../constants';
 import { formatYen } from '../lib/format';
+import { emptyDrinks } from '../lib/party';
 
 interface MemberStat {
   name: string;
@@ -12,7 +13,7 @@ interface MemberStat {
 export function getMemberStats(historyArray: Party[]): MemberStat[] {
   const stats: Record<string, MemberStat> = {};
   FIXED_MEMBERS.forEach((m) => {
-    stats[m.id] = { name: m.name, totalDrinks: 0, drinks: { beer: 0, highball: 0, sour: 0, other: 0 }, amount: 0 };
+    stats[m.id] = { name: m.name, totalDrinks: 0, drinks: emptyDrinks(), amount: 0 };
   });
 
   historyArray.forEach((p) => {

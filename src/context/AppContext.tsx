@@ -1,17 +1,6 @@
 import { createContext, useContext, useReducer, type ReactNode } from 'react';
-import { FIXED_MEMBERS, SPLIT_ROLES } from '../constants';
 import type { AppView, Group, Party, PartyState, PartyTab, StatsTab } from '../types';
-
-function makeInitialPartyState(): PartyState {
-  const roles: Record<string, number> = {};
-  FIXED_MEMBERS.forEach((m) => (roles[m.id] = SPLIT_ROLES[1].id));
-  return {
-    id: null, areaName: '', storeName: '', startTime: null,
-    members: [],
-    split: { totalAmount: 0, roles },
-    summary: { rawText: '', result: '' },
-  };
-}
+import { emptyPartyState } from '../lib/party';
 
 interface AppState {
   view: AppView;
@@ -41,7 +30,7 @@ const initialState: AppState = {
   view: 'loading',
   groupInfo: null,
   historyData: [],
-  partyState: makeInitialPartyState(),
+  partyState: emptyPartyState(),
   activePartyTab: 'members',
   activeStatsTab: 'month',
   statsDate: new Date(),
@@ -61,7 +50,7 @@ function reducer(state: AppState, action: AppAction): AppState {
     case 'SET_SHARED_TEXT': return { ...state, sharedText: action.text };
     case 'SET_EDITING_EXISTING': return { ...state, editingExistingParty: action.value };
     case 'LOGOUT':
-      return { ...initialState, view: 'login', partyState: makeInitialPartyState() };
+      return { ...initialState, view: 'login', partyState: emptyPartyState() };
     default: return state;
   }
 }

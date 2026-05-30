@@ -1,31 +1,16 @@
 import { useApp } from '../context/AppContext';
 import { auth } from '../firebase';
-import { createParty, cleanup, leaveGroup } from '../lib/db';
+import { cleanup, leaveGroup } from '../lib/db';
 import { logout } from '../lib/auth';
-import { FIXED_MEMBERS, SPLIT_ROLES } from '../constants';
-import type { PartyState } from '../types';
+import { createNewParty } from '../lib/party';
 
 export function HomeView() {
   const { state, dispatch } = useApp();
   const user = auth.currentUser;
 
   async function handleNewParty() {
-    const roles: Record<string, number> = {};
-    FIXED_MEMBERS.forEach((m) => (roles[m.id] = SPLIT_ROLES[1].id));
-    const startTime = new Date().toISOString();
-    const initialMembers = FIXED_MEMBERS.map((m) => ({
-      ...m,
-      drinks: { beer: 0, highball: 0, sour: 0, other: 0 },
-      totalDrinks: 0,
-    }));
     try {
-      const partyId = await createParty({ areaName: '', storeName: '', startTime, members: initialMembers, totalAmount: 0, splitRoles: roles });
-      const newParty: PartyState = {
-        id: partyId, areaName: '', storeName: '', startTime,
-        members: initialMembers,
-        split: { totalAmount: 0, roles },
-        summary: { rawText: '', result: '' },
-      };
+      const newParty = await createNewParty();
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'members' });
       dispatch({ type: 'SET_VIEW', view: 'party' });

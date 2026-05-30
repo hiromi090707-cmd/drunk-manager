@@ -1,7 +1,6 @@
-import type { Party, PartyState } from '../../types';
+import type { Party } from '../../types';
 import { MemberStatsList } from '../../components/MemberStatsList';
 import { useApp } from '../../context/AppContext';
-import { FIXED_MEMBERS, SPLIT_ROLES } from '../../constants';
 import { DateNavigator } from '../../components/DateNavigator';
 import { StatMetric } from '../../components/StatMetric';
 import { PartyHistoryCard } from '../../components/PartyHistoryCard';
@@ -55,18 +54,4 @@ export function DayStats({ historyData, statsDate, onEditParty, onDeleteParty }:
       </div>
     </div>
   );
-}
-
-export function buildEditPartyState(party: Party): PartyState {
-  const roles = { ...party.splitRoles };
-  if (Object.keys(roles).length === 0) {
-    FIXED_MEMBERS.forEach((m) => (roles[m.id] = SPLIT_ROLES[1].id));
-  }
-  return {
-    id: party._docId, areaName: party.areaName || '', storeName: party.storeName || '',
-    startTime: party.startTime, endTime: party.endTime,
-    members: party.members,
-    split: { totalAmount: party.totalAmount || 0, roles },
-    summary: { rawText: party.summaryRaw || '', result: party.summaryText || '' },
-  };
 }

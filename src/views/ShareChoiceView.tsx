@@ -1,8 +1,5 @@
 import { useApp } from '../context/AppContext';
-import { createParty } from '../lib/db';
-import { FIXED_MEMBERS, SPLIT_ROLES } from '../constants';
-import type { PartyState } from '../types';
-import { buildEditPartyState } from './StatsView/DayStats';
+import { buildEditPartyState, createNewParty } from '../lib/party';
 import { formatYen, partyName } from '../lib/format';
 
 export function ShareChoiceView() {
@@ -11,18 +8,8 @@ export function ShareChoiceView() {
   const recentParties = [...historyData].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5);
 
   async function handleShareNew() {
-    const roles: Record<string, number> = {};
-    FIXED_MEMBERS.forEach((m) => (roles[m.id] = SPLIT_ROLES[1].id));
-    const startTime = new Date().toISOString();
-    const initialMembers = FIXED_MEMBERS.map((m) => ({ ...m, drinks: { beer: 0, highball: 0, sour: 0, other: 0 }, totalDrinks: 0 }));
     try {
-      const partyId = await createParty({ areaName: '', storeName: '', startTime, members: initialMembers, totalAmount: 0, splitRoles: roles });
-      const newParty: PartyState = {
-        id: partyId, areaName: '', storeName: '', startTime,
-        members: initialMembers,
-        split: { totalAmount: 0, roles },
-        summary: { rawText: sharedText, result: '' },
-      };
+      const newParty = await createNewParty(sharedText);
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'summary' });
       dispatch({ type: 'SET_VIEW', view: 'party' });
