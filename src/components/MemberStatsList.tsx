@@ -1,7 +1,7 @@
 import type { Party } from '../types';
-import { FIXED_MEMBERS } from '../constants';
 import { formatYen } from '../lib/format';
-import { emptyDrinks } from '../lib/party';
+import { emptyDrinks, rosterOf } from '../lib/party';
+import { useApp } from '../context/AppContext';
 
 interface MemberStat {
   name: string;
@@ -10,9 +10,9 @@ interface MemberStat {
   amount: number;
 }
 
-export function getMemberStats(historyArray: Party[]): MemberStat[] {
+export function getMemberStats(historyArray: Party[], roster: { id: string; name: string }[]): MemberStat[] {
   const stats: Record<string, MemberStat> = {};
-  FIXED_MEMBERS.forEach((m) => {
+  roster.forEach((m) => {
     stats[m.id] = { name: m.name, totalDrinks: 0, drinks: emptyDrinks(), amount: 0 };
   });
 
@@ -38,7 +38,8 @@ export function getMemberStats(historyArray: Party[]): MemberStat[] {
 }
 
 export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
-  const statsArray = getMemberStats(historyArray);
+  const { state } = useApp();
+  const statsArray = getMemberStats(historyArray, rosterOf(state.groupInfo));
   if (statsArray.every((m) => m.amount === 0 && m.totalDrinks === 0)) return null;
 
   const medals = ['🥇', '🥈', '🥉'];

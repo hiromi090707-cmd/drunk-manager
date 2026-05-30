@@ -1,5 +1,5 @@
 import { useApp } from '../context/AppContext';
-import { buildEditPartyState, createNewParty } from '../lib/party';
+import { buildEditPartyState, createNewParty, rosterOf } from '../lib/party';
 import { formatYen, partyName } from '../lib/format';
 
 export function ShareChoiceView() {
@@ -9,7 +9,7 @@ export function ShareChoiceView() {
 
   async function handleShareNew() {
     try {
-      const newParty = await createNewParty(sharedText);
+      const newParty = await createNewParty(rosterOf(state.groupInfo), sharedText);
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'summary' });
       dispatch({ type: 'SET_VIEW', view: 'party' });

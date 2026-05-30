@@ -2,7 +2,7 @@ import { useApp } from '../context/AppContext';
 import { auth } from '../firebase';
 import { cleanup, leaveGroup } from '../lib/db';
 import { logout } from '../lib/auth';
-import { createNewParty } from '../lib/party';
+import { createNewParty, rosterOf } from '../lib/party';
 
 export function HomeView() {
   const { state, dispatch } = useApp();
@@ -10,7 +10,7 @@ export function HomeView() {
 
   async function handleNewParty() {
     try {
-      const newParty = await createNewParty();
+      const newParty = await createNewParty(rosterOf(state.groupInfo));
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'members' });
       dispatch({ type: 'SET_VIEW', view: 'party' });
