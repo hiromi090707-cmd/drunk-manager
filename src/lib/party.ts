@@ -24,7 +24,7 @@ export function defaultSplitRoles(roster: Roster): Record<string, number> {
 
 // roster の全メンバー（ドリンク0）
 export function createInitialMembers(roster: Roster): Member[] {
-  return roster.map((m) => ({ id: m.id, name: m.name, drinks: emptyDrinks(), totalDrinks: 0 }));
+  return roster.map((m) => ({ id: m.id, name: m.name, drinks: emptyDrinks(), megaDrinks: emptyDrinks(), totalDrinks: 0 }));
 }
 
 // 「アクティブなパーティなし」の空 PartyState（初期状態・ログアウト時。group がまだ無いのでフォールバック roster を使う）
@@ -44,7 +44,7 @@ export function buildEditPartyState(party: Party): PartyState {
   return {
     id: party._docId, areaName: party.areaName || '', storeName: party.storeName || '',
     startTime: party.startTime, endTime: party.endTime,
-    members: party.members,
+    members: party.members.map((m) => ({ ...m, megaDrinks: m.megaDrinks ?? emptyDrinks() })),
     split: { totalAmount: party.totalAmount || 0, roles },
     summary: { rawText: party.summaryRaw || '', result: party.summaryText || '' },
   };
