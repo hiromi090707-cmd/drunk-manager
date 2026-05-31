@@ -24,6 +24,7 @@ import {
   listenToParties,
   saveParty,
   setActiveGroup,
+  updateInviteCode,
 } from './db';
 import { auth } from '../firebase';
 import type { Party } from '../types';
@@ -337,5 +338,39 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
 
     // 後始末で使う変数を参照しておく（lint 用）
     void groupA;
+  });
+});
+
+describe('招待コードのリネーム', () => {
+  it('updateInviteCode で既存グループのコードを変更でき、大文字に正規化される', async () => {
+    const group = await createGroup('リネームテスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'OLD001');
+
+    const result = await updateInviteCode('new99');
+    expect(result).toBe('NEW99');
+
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().collection('groups').doc(group.id).get();
+      expect(snap.data()?.inviteCode).toBe('NEW99');
+    });
+  });
+
+  it('他グループが使用中のコードへの変更は reject される', async () => {
+    // 別グループ B を直接用意（コード TAKEN1）
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const ref = ctx.firestore().collection('groups').doc();
+      await ref.set({
+        name: 'B',
+        memberUids: [USER_B.uid],
+        memberEmails: [USER_B.email],
+        members: TEST_MEMBERS,
+        inviteCode: 'TAKEN1',
+        claudeApiKey: '',
+        createdBy: USER_B.uid,
+      });
+    });
+
+    // A が自グループを作成し、B のコードへ変更しようとする
+    await createGroup('A', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MINE01');
+    await expect(updateInviteCode('TAKEN1')).rejects.toThrow('すでに使われています');
   });
 });
