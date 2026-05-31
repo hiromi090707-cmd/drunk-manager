@@ -11,8 +11,10 @@ export function HomeView() {
 
   const [editingCode, setEditingCode] = useState(false);
   const [codeInput, setCodeInput] = useState('');
+  const [saving, setSaving] = useState(false);
 
   async function handleSaveCode() {
+    setSaving(true);
     try {
       const updated = await updateInviteCode(codeInput);
       dispatch({ type: 'SET_GROUP', group: { ...state.groupInfo!, inviteCode: updated } });
@@ -20,6 +22,8 @@ export function HomeView() {
       alert(`招待コードを「${updated}」に変更しました。`);
     } catch (e) {
       alert(e instanceof Error ? e.message : '変更に失敗しました。');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -125,7 +129,7 @@ export function HomeView() {
                 maxLength={16}
                 autoFocus
               />
-              <button onClick={handleSaveCode} className="btn btn-sm text-accent" style={{ fontWeight: 'bold' }}>保存</button>
+              <button onClick={handleSaveCode} disabled={saving} className="btn btn-sm text-accent" style={{ fontWeight: 'bold' }}>{saving ? '保存中…' : '保存'}</button>
               <button onClick={() => setEditingCode(false)} className="btn btn-sm btn-ghost text-muted">取消</button>
             </div>
           ) : (
