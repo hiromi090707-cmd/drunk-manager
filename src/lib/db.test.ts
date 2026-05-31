@@ -371,6 +371,6 @@ describe('招待コードのリネーム', () => {
 
     // A が自グループを作成し、B のコードへ変更しようとする
     await createGroup('A', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MINE01');
-    await expect(updateInviteCode('TAKEN1')).rejects.toThrow('すでに使われています');
+    await expect(updateInviteCode('TAKEN1')).rejects.toThrow('この招待コードはすでに使われています');
   });
 });

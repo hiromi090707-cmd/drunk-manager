@@ -69,14 +69,15 @@ export async function joinGroupByCode(inviteCode: string, uid: string, email: st
 
 export async function updateInviteCode(newCode: string): Promise<string> {
   if (!activeGroupId) throw new Error('No active group');
+  const groupId = activeGroupId;
   const code = newCode.trim().toUpperCase();
   if (code.length < 2 || code.length > 16) {
     throw new Error('招待コードは2〜16文字で入力してください。');
   }
   const existing = await getDocs(query(collection(db, 'groups'), where('inviteCode', '==', code)));
-  const takenByOther = existing.docs.some((d) => d.id !== activeGroupId);
+  const takenByOther = existing.docs.some((d) => d.id !== groupId);
   if (takenByOther) throw new Error('この招待コードはすでに使われています。別のコードを指定してください。');
-  await updateDoc(doc(db, 'groups', activeGroupId), { inviteCode: code });
+  await updateDoc(doc(db, 'groups', groupId), { inviteCode: code });
   return code;
 }
 
