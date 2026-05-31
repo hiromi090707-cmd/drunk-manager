@@ -1,6 +1,7 @@
 import type { Party } from '../types';
 import { formatYen } from '../lib/format';
 import { emptyDrinks, rosterOf } from '../lib/party';
+import { megaTotal, pureAlcoholGrams, beerCans } from '../lib/alcohol';
 import { useApp } from '../context/AppContext';
 
 interface MemberStat {
@@ -8,12 +9,14 @@ interface MemberStat {
   totalDrinks: number;
   drinks: { beer: number; highball: number; sour: number; other: number };
   amount: number;
+  megaCups: number;
+  pureAlcohol: number;
 }
 
 export function getMemberStats(historyArray: Party[], roster: { id: string; name: string }[]): MemberStat[] {
   const stats: Record<string, MemberStat> = {};
   roster.forEach((m) => {
-    stats[m.id] = { name: m.name, totalDrinks: 0, drinks: emptyDrinks(), amount: 0 };
+    stats[m.id] = { name: m.name, totalDrinks: 0, drinks: emptyDrinks(), amount: 0, megaCups: 0, pureAlcohol: 0 };
   });
 
   historyArray.forEach((p) => {
@@ -26,6 +29,8 @@ export function getMemberStats(historyArray: Party[], roster: { id: string; name
         stats[m.id].drinks.sour += m.drinks.sour || 0;
         stats[m.id].drinks.other += m.drinks.other || 0;
       }
+      stats[m.id].megaCups += megaTotal(m);
+      stats[m.id].pureAlcohol += pureAlcoholGrams(m);
     });
     if (p.memberAmounts) {
       Object.entries(p.memberAmounts).forEach(([mId, amt]) => {
@@ -40,7 +45,7 @@ export function getMemberStats(historyArray: Party[], roster: { id: string; name
 export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
   const { state } = useApp();
   const statsArray = getMemberStats(historyArray, rosterOf(state.groupInfo));
-  if (statsArray.every((m) => m.amount === 0 && m.totalDrinks === 0)) return null;
+  if (statsArray.every((m) => m.amount === 0 && m.totalDrinks === 0 && m.pureAlcohol === 0)) return null;
 
   const medals = ['🥇', '🥈', '🥉'];
 
@@ -62,6 +67,10 @@ export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
                 <span>🍷{m.drinks.other}</span>
               </div>
               <span className="font-bold">計 {m.totalDrinks} 杯</span>
+            </div>
+            <div className="text-sm text-muted" style={{ marginTop: '0.3rem', textAlign: 'right' }}>
+              {m.megaCups > 0 && <span>メガ {m.megaCups}杯 ・ </span>}
+              🍺換算 約{beerCans(m.pureAlcohol).toFixed(1)}本
             </div>
           </div>
         ))}

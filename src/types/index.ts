@@ -7,6 +7,7 @@ export interface Member {
   id: string;
   name: string;
   drinks: Record<DrinkType, number>;
+  megaDrinks?: Record<DrinkType, number>;
   totalDrinks: number;
 }
 
