@@ -1,7 +1,7 @@
 {
   "name": "Drunk Manager",
   "short_name": "Drunk",
-  "start_url": "./",
+  "start_url": "/drunk-manager/",
   "display": "standalone",
   "background_color": "#120c08",
   "theme_color": "#120c08",
@@ -14,7 +14,7 @@
     }
   ],
   "share_target": {
-    "action": "./",
+    "action": "/drunk-manager/",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
