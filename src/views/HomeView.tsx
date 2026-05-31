@@ -130,7 +130,7 @@ export function HomeView() {
                 autoFocus
               />
               <button onClick={handleSaveCode} disabled={saving} className="btn btn-sm text-accent" style={{ fontWeight: 'bold' }}>{saving ? '保存中…' : '保存'}</button>
-              <button onClick={() => setEditingCode(false)} className="btn btn-sm btn-ghost text-muted">取消</button>
+              <button onClick={() => setEditingCode(false)} disabled={saving} className="btn btn-sm btn-ghost text-muted">取消</button>
             </div>
           ) : (
             <div className="flex justify-between items-center">
