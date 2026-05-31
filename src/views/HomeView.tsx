@@ -1,12 +1,31 @@
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { auth } from '../firebase';
-import { cleanup, leaveGroup } from '../lib/db';
+import { cleanup, leaveGroup, updateInviteCode } from '../lib/db';
 import { logout } from '../lib/auth';
 import { createNewParty, rosterOf } from '../lib/party';
 
 export function HomeView() {
   const { state, dispatch } = useApp();
   const user = auth.currentUser;
+
+  const [editingCode, setEditingCode] = useState(false);
+  const [codeInput, setCodeInput] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function handleSaveCode() {
+    setSaving(true);
+    try {
+      const updated = await updateInviteCode(codeInput);
+      dispatch({ type: 'SET_GROUP', group: { ...state.groupInfo!, inviteCode: updated } });
+      setEditingCode(false);
+      alert(`招待コードを「${updated}」に変更しました。`);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : '変更に失敗しました。');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleNewParty() {
     try {
@@ -99,9 +118,34 @@ export function HomeView() {
       {state.groupInfo?.inviteCode && (
         <div className="glass p-3 mt-4">
           <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '0.2rem' }}>招待コード</p>
-          <span className="text-accent" style={{ letterSpacing: '0.2rem', fontWeight: 'bold' }}>
-            {state.groupInfo.inviteCode}
-          </span>
+          {editingCode ? (
+            <div className="flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                className="input-field text-accent"
+                style={{ flex: 1, minWidth: 0, letterSpacing: '0.2rem', fontWeight: 'bold', textTransform: 'uppercase' }}
+                maxLength={16}
+                autoFocus
+              />
+              <button onClick={handleSaveCode} disabled={saving} className="btn btn-sm text-accent" style={{ fontWeight: 'bold' }}>{saving ? '保存中…' : '保存'}</button>
+              <button onClick={() => setEditingCode(false)} disabled={saving} className="btn btn-sm btn-ghost text-muted">取消</button>
+            </div>
+          ) : (
+            <div className="flex justify-between items-center">
+              <span className="text-accent" style={{ letterSpacing: '0.2rem', fontWeight: 'bold' }}>
+                {state.groupInfo.inviteCode}
+              </span>
+              <button
+                onClick={() => { setCodeInput(state.groupInfo!.inviteCode); setEditingCode(true); }}
+                className="btn btn-sm btn-ghost text-muted"
+                style={{ fontSize: '0.75rem' }}
+              >
+                変更
+              </button>
+            </div>
+          )}
           <button
             onClick={handleLeaveGroup}
             className="btn btn-sm mt-3 w-full"
