@@ -4,11 +4,14 @@ import { auth } from '../firebase';
 import { cleanup, leaveGroup, updateInviteCode } from '../lib/db';
 import { logout } from '../lib/auth';
 import { createNewParty, rosterOf, findActiveParty, buildEditPartyState } from '../lib/party';
+import { OnboardingOverlay } from '../components/OnboardingOverlay';
+import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding';
 
 export function HomeView() {
   const { state, dispatch } = useApp();
   const user = auth.currentUser;
 
+  const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenOnboarding());
   const [editingCode, setEditingCode] = useState(false);
   const [codeInput, setCodeInput] = useState('');
   const [saving, setSaving] = useState(false);
@@ -71,10 +74,16 @@ export function HomeView() {
     await logout();
   }
 
+  function handleCloseOnboarding() {
+    markOnboardingSeen();
+    setShowOnboarding(false);
+  }
+
   const activeParty = findActiveParty(state.historyData);
 
   return (
     <div className="view" id="view-home">
+      {showOnboarding && <OnboardingOverlay onClose={handleCloseOnboarding} />}
       <div className="text-center mt-4 mb-4">
         <h1 style={{
           fontFamily: 'var(--font-display)',

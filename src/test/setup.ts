@@ -13,6 +13,9 @@ process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOS
 process.env.GCLOUD_PROJECT = process.env.GCLOUD_PROJECT ?? 'drunk-manage';
 
 beforeAll(async () => {
+  // SKIP_EMULATOR_CHECK=1 の場合はエミュレーター接続チェックをスキップする（純関数テスト用）
+  if (process.env.SKIP_EMULATOR_CHECK === '1') return;
+
   // Emulator が起動していなければ即座に失敗させる（CI でわかりやすくするため）
   const [host, port] = (process.env.FIRESTORE_EMULATOR_HOST ?? 'localhost:8080').split(':');
   try {
