@@ -63,3 +63,17 @@ export async function createNewParty(roster: Roster, rawText = ''): Promise<Part
     summary: { rawText, result: '' },
   };
 }
+
+// Firestore から読んだ raw members（マップ / 旧配列 / 欠損）を常に Member[] に正規化する。
+// 既存履歴（配列形式）も新形式（マップ）も透過的に扱えるため、データ移行が不要になる。
+export function membersToArray(raw: unknown): Member[] {
+  if (Array.isArray(raw)) return raw as Member[];
+  if (raw && typeof raw === 'object') return Object.values(raw as Record<string, Member>);
+  return [];
+}
+
+// アプリ内部の Member[] を Firestore 保存用マップ（id キー）に変換する。
+// マップ化により members.<id> 単位の部分更新が可能になり、メンバー間の更新衝突を防げる。
+export function membersToMap(members: Member[]): Record<string, Member> {
+  return Object.fromEntries(members.map((m) => [m.id, m]));
+}
