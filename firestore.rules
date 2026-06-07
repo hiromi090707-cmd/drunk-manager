@@ -33,6 +33,22 @@ service cloud.firestore {
              == resource.data.memberEmails.toSet().union([request.auth.token.email].toSet());
     }
 
+    // 退会: 自分の uid/email だけを削除
+    function leavesSelf() {
+      return changedKeys().hasOnly(['memberUids', 'memberEmails'])
+        && (request.auth.uid in resource.data.memberUids)
+        && request.resource.data.memberUids.toSet()
+             == resource.data.memberUids.toSet().difference([request.auth.uid].toSet())
+        && request.resource.data.memberEmails.toSet()
+             == resource.data.memberEmails.toSet().difference([request.auth.token.email].toSet());
+    }
+
+    // 設定変更: 既存メンバーが招待コード / Claude APIキー のみ変更
+    function editsSettings(groupId) {
+      return isMember(groupId)
+        && changedKeys().hasOnly(['inviteCode', 'claudeApiKey']);
+    }
+
     // 許可ユーザーリストは認証済みなら誰でも読める（ログイン確認のため）
     match /config/allowedUsers {
       allow read: if isAuthenticated();
@@ -44,7 +60,7 @@ service cloud.firestore {
       // 作成者は自分自身をmemberUidsに含めなければならない
       allow create: if isAllowed() &&
                        request.auth.uid in request.resource.data.memberUids;
-      allow update: if isAllowed() && (joinsSelf() || isMember(groupId));
+      allow update: if isAllowed() && (joinsSelf() || leavesSelf() || editsSettings(groupId));
       allow delete: if false;
 
       match /parties/{partyId} {

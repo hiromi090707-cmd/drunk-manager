@@ -381,6 +381,58 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
   });
 });
 
+describe('groups 更新ルールの最小権限', () => {
+  it('メンバーでも name は変更できない', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('元の名前', TEST_MEMBERS, USER_A.uid, USER_A.email, 'NAME01');
+
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertFails(
+      aCtx.firestore().collection('groups').doc(group.id).update({ name: '改ざん' }),
+    );
+  });
+
+  it('メンバーは他人を memberUids から削除できない', async () => {
+    // A, B がメンバーのグループをルール無効化で用意
+    let groupId = '';
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const ref = ctx.firestore().collection('groups').doc();
+      await ref.set({
+        name: 'G',
+        memberUids: [USER_A.uid, USER_B.uid],
+        memberEmails: [USER_A.email, USER_B.email],
+        members: TEST_MEMBERS,
+        inviteCode: 'DELME1',
+        claudeApiKey: '',
+        createdBy: USER_A.uid,
+      });
+      groupId = ref.id;
+    });
+
+    // A が B を削除しようとする（自分以外の削除）
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertFails(
+      aCtx.firestore().collection('groups').doc(groupId).update({
+        memberUids: [USER_A.uid],
+        memberEmails: [USER_A.email],
+      }),
+    );
+  });
+
+  it('メンバー本人は退会（自分の削除）できる', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'LEAVE1');
+
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertSucceeds(
+      aCtx.firestore().collection('groups').doc(group.id).update({
+        memberUids: [],
+        memberEmails: [],
+      }),
+    );
+  });
+});
+
 describe('招待コードのリネーム', () => {
   it('updateInviteCode で既存グループのコードを変更でき、大文字に正規化される', async () => {
     const group = await createGroup('リネームテスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'OLD001');
