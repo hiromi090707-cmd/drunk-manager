@@ -13,10 +13,11 @@ export function GroupSetupView() {
   async function handleCreateGroup() {
     const user = auth.currentUser;
     if (!user) return;
+    if (!user.email) return alert('メールアドレスが取得できませんでした。再ログインしてください。');
     const code = customCode.trim().toUpperCase();
     if (code && code.length < 2) return alert('招待コードは2文字以上で入力してください。');
     try {
-      const group = await createGroup('いつメン', [...FIXED_MEMBERS], user.uid, user.email ?? '', code || undefined);
+      const group = await createGroup('いつメン', [...FIXED_MEMBERS], user.uid, user.email, code || undefined);
       dispatch({ type: 'SET_GROUP', group });
       listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
       alert(`グループを作成しました！\n\n招待コード: ${group.inviteCode}\n\nこのコードを仲間に共有してください。`);
