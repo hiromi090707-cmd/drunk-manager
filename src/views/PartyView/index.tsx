@@ -17,8 +17,21 @@ export function PartyView() {
     if (!partyState.id) return;
     listenerRef.current = listenToParty(partyState.id, (updated) => {
       const current = partyStateRef.current;
-      if (updated.members && JSON.stringify(updated.members) !== JSON.stringify(current.members)) {
-        dispatch({ type: 'SET_PARTY_STATE', party: { ...current, members: updated.members } });
+      // サーバー由来の members（配列）を、現在のローカル members にメンバー単位でマージする。
+      // 自分が入力中のメンバーを巻き戻さないよう、各メンバーは「変化があった場合のみ」差し替える。
+      const incoming = updated.members ?? [];
+      const byId = new Map(incoming.map((m) => [m.id, m]));
+      let changedAny = false;
+      const merged = current.members.map((m) => {
+        const next = byId.get(m.id);
+        if (next && JSON.stringify(next) !== JSON.stringify(m)) {
+          changedAny = true;
+          return next;
+        }
+        return m;
+      });
+      if (changedAny) {
+        dispatch({ type: 'SET_PARTY_STATE', party: { ...current, members: merged } });
       }
     });
     return () => { listenerRef.current?.(); };

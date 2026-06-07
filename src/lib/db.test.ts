@@ -27,9 +27,10 @@ import {
   saveParty,
   setActiveGroup,
   updateInviteCode,
+  updateMemberDrinks,
 } from './db';
 import { auth } from '../firebase';
-import type { Party } from '../types';
+import type { Member, Party } from '../types';
 
 const PROJECT_ID = 'drunk-manage';
 
@@ -253,6 +254,31 @@ describe('パーティの保存・取得', () => {
       ? saved.members.length
       : Object.keys(saved.members as object).length;
     expect(count).toBe(2);
+  });
+
+  it('updateMemberDrinks は他メンバーのカウントを保持する（同時更新の衝突回避）', async () => {
+    await signInAs(USER_A);
+    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email);
+    const gid = getActiveGroup()!;
+    const mk = (id: string, beer: number): Member => ({
+      id, name: id, drinks: { beer, highball: 0, sour: 0, other: 0 },
+      megaDrinks: { beer: 0, highball: 0, sour: 0, other: 0 }, totalDrinks: beer,
+    });
+    const partyId = await createParty({
+      areaName: '', storeName: '', startTime: new Date().toISOString(),
+      members: [mk('m1', 0), mk('m2', 0)], totalAmount: 0, splitRoles: {},
+    });
+
+    // m1 と m2 を別々に部分更新
+    await updateMemberDrinks(partyId, mk('m1', 3));
+    await updateMemberDrinks(partyId, mk('m2', 5));
+
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().doc(`groups/${gid}/parties/${partyId}`).get();
+      const data = snap.data()!;
+      expect(data.members.m1.totalDrinks).toBe(3);
+      expect(data.members.m2.totalDrinks).toBe(5); // m1 更新で消えていないこと
+    });
   });
 
   it('saveParty は members をマップ形式（id キー）で Firestore に保存する', async () => {

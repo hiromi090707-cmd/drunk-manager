@@ -167,9 +167,15 @@ export function listenToParty(partyId: string, callback: (party: Party) => void)
   }, console.error);
 }
 
-export async function updatePartyMemberDrinks(partyId: string, members: Member[]): Promise<void> {
-  const partyRef = doc(partiesCollection(), String(partyId));
-  await updateDoc(partyRef, { members: membersToMap(members), updatedAt: serverTimestamp() });
+// 1メンバーのフィールドのみを部分更新する。members.<id> サブツリーだけを書くため、
+// 他メンバーの members.<otherId> は Firestore 側で自動マージされ、同時更新が消し合わない。
+export async function updateMemberDrinks(partyId: string, member: Member): Promise<void> {
+  if (!activeGroupId) return;
+  const ref = doc(db, 'groups', activeGroupId, 'parties', partyId);
+  await updateDoc(ref, {
+    [`members.${member.id}`]: member,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export async function migrateLocalData(): Promise<number> {

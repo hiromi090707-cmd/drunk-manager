@@ -3,7 +3,7 @@ import type { Member, PartyState } from '../../types';
 import { DRINK_TYPES } from '../../constants';
 import { emptyDrinks } from '../../lib/party';
 import { megaTotal } from '../../lib/alcohol';
-import { updatePartyMemberDrinks } from '../../lib/db';
+import { updateMemberDrinks } from '../../lib/db';
 
 interface Props {
   partyState: PartyState;
@@ -15,21 +15,24 @@ export function MembersTab({ partyState, onUpdate }: Props) {
   const [megaMode, setMegaMode] = useState(false);
 
   function updateDrink(mId: string, type: string, delta: 1 | -1, target: 'regular' | 'mega') {
+    let changed: Member | undefined;
     const members = partyState.members.map((m): Member => {
       if (m.id !== mId) return m;
       if (target === 'mega') {
         const current = m.megaDrinks ?? emptyDrinks();
         const count = Math.max(0, (current[type as keyof Member['drinks']] || 0) + delta);
-        return { ...m, megaDrinks: { ...current, [type]: count } };
+        changed = { ...m, megaDrinks: { ...current, [type]: count } };
+        return changed;
       }
       const count = Math.max(0, (m.drinks[type as keyof Member['drinks']] || 0) + delta);
       const prev = m.drinks[type as keyof Member['drinks']] || 0;
       const diff = count - prev;
-      return { ...m, drinks: { ...m.drinks, [type]: count }, totalDrinks: m.totalDrinks + diff };
+      changed = { ...m, drinks: { ...m.drinks, [type]: count }, totalDrinks: m.totalDrinks + diff };
+      return changed;
     });
     const updated = { ...partyState, members };
     onUpdate(updated);
-    if (partyState.id) updatePartyMemberDrinks(partyState.id, members).catch(console.error);
+    if (partyState.id && changed) updateMemberDrinks(partyState.id, changed).catch(console.error);
   }
 
   function handlePressStart(mId: string, type: string) {
