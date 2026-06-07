@@ -57,6 +57,13 @@ FIXED_MEMBERS = [hiromi, souga, takumi, takuto, rui]  // 5人固定
 - `listenToParty` のコールバック内では `partyStateRef.current` を使う
 - `partyState` を直接使うとエリア・店名入力がリセットされる
 
+### 同時編集（リアルタイム）
+- party の `members` は Firestore 上ではマップ `Record<id, Member>` で保存（部分更新のため）。`Party` 型は `Member[]` 配列のまま。変換は `db.ts` の境界（保存=`membersToMap`／読取=`membersToArray`）に閉じ込める
+- ドリンク更新は `updateMemberDrinks` で `members.<id>` だけを部分更新（他メンバーと衝突しない）。`members` 配列全体を上書きする書き込みパスを足さないこと（マップ形状が壊れ部分更新が崩れる）
+- 購読マージは `mergeMembers` で「他メンバーの変化分だけ」取り込む（自分の入力中カウントを巻き戻さない）
+- 「飲み会スタート」は endTime 無しの進行中 party があれば合流（`findActiveParty`）。cold-load 直後は `historyData` 未取得で重複作成されうる小さな窓がある（許容済み）
+- 純粋関数テストは `npm run test:unit`（emulator 不要）、Firestore 込みは `npm run test:emulators`
+
 ## 環境変数
 
 ```
