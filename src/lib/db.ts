@@ -101,9 +101,10 @@ export async function getGroupInfo(): Promise<Group | null> {
 
 export async function leaveGroup(uid: string, email: string): Promise<void> {
   if (!activeGroupId) return;
-  const updates: Record<string, unknown> = { memberUids: arrayRemove(uid) };
-  if (email) updates.memberEmails = arrayRemove(email);
-  await updateDoc(doc(db, 'groups', activeGroupId), updates);
+  await updateDoc(doc(db, 'groups', activeGroupId), {
+    memberUids: arrayRemove(uid),
+    memberEmails: arrayRemove(email),
+  });
   activeGroupId = null;
 }
 

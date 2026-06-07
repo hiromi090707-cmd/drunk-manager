@@ -464,6 +464,36 @@ describe('groups 更新ルールの最小権限', () => {
       }),
     );
   });
+
+  it('leaveGroup は memberUids と memberEmails の両方から本人を削除する', async () => {
+    // A, B がメンバーのグループを用意し、A が leaveGroup
+    let groupId = '';
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const ref = ctx.firestore().collection('groups').doc();
+      await ref.set({
+        name: 'G',
+        memberUids: [USER_A.uid, USER_B.uid],
+        memberEmails: [USER_A.email, USER_B.email],
+        members: TEST_MEMBERS,
+        inviteCode: 'LV0001',
+        claudeApiKey: '',
+        createdBy: USER_A.uid,
+      });
+      groupId = ref.id;
+    });
+
+    await signInAs(USER_A);
+    setActiveGroup(groupId);
+    await leaveGroup(USER_A.uid, USER_A.email);
+
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().collection('groups').doc(groupId).get();
+      const data = snap.data();
+      expect(data?.memberUids).not.toContain(USER_A.uid);
+      expect(data?.memberEmails).not.toContain(USER_A.email);
+      expect(data?.memberUids).toContain(USER_B.uid);
+    });
+  });
 });
 
 describe('招待コードのリネーム', () => {

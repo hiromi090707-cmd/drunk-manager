@@ -42,9 +42,13 @@ export function HomeView() {
     if (!confirm('このグループを退出しますか？\n退出後は招待コードで再参加できます。')) return;
     const user = auth.currentUser;
     if (!user) return;
+    if (!user.email) {
+      alert('メールアドレスが取得できませんでした。再ログインしてください。');
+      return;
+    }
     try {
       cleanup();
-      await leaveGroup(user.uid, user.email ?? '');
+      await leaveGroup(user.uid, user.email);
       dispatch({ type: 'SET_GROUP', group: null });
       dispatch({ type: 'SET_HISTORY', parties: [] });
       dispatch({ type: 'SET_VIEW', view: 'groupSetup' });

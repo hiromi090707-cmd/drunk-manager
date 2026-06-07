@@ -30,8 +30,9 @@ export function GroupSetupView() {
     const user = auth.currentUser;
     const code = inviteCode.trim().toUpperCase();
     if (!user || !code) return alert('招待コードを入力してください。');
+    if (!user.email) return alert('メールアドレスが取得できませんでした。再ログインしてください。');
     try {
-      const group = await joinGroupByCode(code, user.uid, user.email ?? '');
+      const group = await joinGroupByCode(code, user.uid, user.email);
       dispatch({ type: 'SET_GROUP', group });
       listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
       dispatch({ type: 'SET_VIEW', view: 'home' });
