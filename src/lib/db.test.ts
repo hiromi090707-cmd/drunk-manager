@@ -4,6 +4,8 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
   initializeTestEnvironment,
+  assertFails,
+  assertSucceeds,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
@@ -42,6 +44,18 @@ const TEST_MEMBERS = [
 const USER_A = { uid: 'uid-a', email: 'a@example.com' };
 const USER_B = { uid: 'uid-b', email: 'b@example.com' };
 
+// 指定ユーザーで Auth Emulator にサインインし、実 uid を反映する。
+// db.ts の関数はこの認証主体（auth.currentUser）でルール評価される。
+async function signInAs(user: { email: string; uid: string }): Promise<void> {
+  let cred;
+  try {
+    cred = await createUserWithEmailAndPassword(auth, user.email, 'password');
+  } catch {
+    cred = await signInWithEmailAndPassword(auth, user.email, 'password');
+  }
+  user.uid = cred.user.uid;
+}
+
 let testEnv: RulesTestEnvironment;
 
 // 完全なリスナー反映を待つための小さな待機
@@ -71,17 +85,11 @@ function waitForParties(
 }
 
 beforeAll(async () => {
-  // Auth Emulator にテストユーザーを作成してサインインしておく。
-  // Firestore のセキュリティルールが request.auth.token.email を要求するため、
-  // db.ts の関数を呼ぶ前にサインイン済みにしておく必要がある。
-  // uid は Emulator が採番した実値を USER_A.uid に反映し、以降のテストで使う。
-  let cred;
-  try {
-    cred = await createUserWithEmailAndPassword(auth, USER_A.email, 'password');
-  } catch {
-    cred = await signInWithEmailAndPassword(auth, USER_A.email, 'password');
-  }
-  USER_A.uid = cred.user.uid;
+  // USER_A / USER_B 両方を Auth Emulator に用意し、実 uid を確定。
+  // 既定の認証主体は USER_A に戻しておく。
+  await signInAs(USER_A);
+  await signInAs(USER_B);
+  await signInAs(USER_A);
 
   // ルールユニットテスト環境を起動。
   // 環境変数 FIRESTORE_EMULATOR_HOST 等は setup.ts でセット済み。
@@ -120,6 +128,8 @@ afterEach(async () => {
       .doc('allowedUsers')
       .set({ emails: [USER_A.email, USER_B.email] });
   });
+  // テスト内で USER_B に切り替えていても、次テストは USER_A 前提に戻す
+  await signInAs(USER_A);
 });
 
 afterAll(async () => {
@@ -145,8 +155,9 @@ describe('グループ作成・参加', () => {
     expect(getActiveGroup()).toBe(group.id);
   });
 
-  it('joinGroupByCode で別ユーザーが既存グループに参加できる', async () => {
-    // Aがグループ作成
+  it('joinGroupByCode で新メンバー本人が招待コードで参加できる', async () => {
+    // USER_A がグループ作成
+    await signInAs(USER_A);
     const groupA = await createGroup(
       'テストグループ',
       TEST_MEMBERS,
@@ -155,19 +166,48 @@ describe('グループ作成・参加', () => {
       'JOIN01',
     );
 
-    // Bが参加
+    // USER_B 本人としてサインインし直して参加（本番フローの再現）
+    await signInAs(USER_B);
     const joined = await joinGroupByCode('JOIN01', USER_B.uid, USER_B.email);
 
     expect(joined.id).toBe(groupA.id);
     expect(getActiveGroup()).toBe(groupA.id);
-    // memberUids に B が追加されたことを後から読み直して確認するため、
-    // セキュリティルールを無効化して直接 get する
+
+    // memberUids/memberEmails に B が追加されたことをルール無効化で直接確認
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const snap = await ctx.firestore().collection('groups').doc(groupA.id).get();
       const data = snap.data();
       expect(data?.memberUids).toContain(USER_A.uid);
       expect(data?.memberUids).toContain(USER_B.uid);
+      expect(data?.memberEmails).toContain(USER_B.email);
     });
+  });
+
+  it('参加時に他人のuidを混ぜると拒否される', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'EVIL01');
+
+    // USER_B のコンテキストで、自分 + 架空uid を追加しようとする
+    const bCtx = testEnv.authenticatedContext(USER_B.uid, { email: USER_B.email });
+    await assertFails(
+      bCtx.firestore().collection('groups').doc(group.id).update({
+        memberUids: [USER_A.uid, USER_B.uid, 'uid-ghost'],
+        memberEmails: [USER_A.email, USER_B.email, 'ghost@example.com'],
+      }),
+    );
+  });
+
+  it('参加時に他人のemailを詐称すると拒否される', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'EVIL02');
+
+    const bCtx = testEnv.authenticatedContext(USER_B.uid, { email: USER_B.email });
+    await assertFails(
+      bCtx.firestore().collection('groups').doc(group.id).update({
+        memberUids: [USER_A.uid, USER_B.uid],
+        memberEmails: [USER_A.email, 'evil@example.com'],
+      }),
+    );
   });
 });
 
