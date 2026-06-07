@@ -431,6 +431,39 @@ describe('groups 更新ルールの最小権限', () => {
       }),
     );
   });
+
+  it('allowedリスト外のユーザーはグループを作成できない', async () => {
+    const outsider = testEnv.authenticatedContext('uid-outsider', {
+      email: 'outsider@example.com',
+    });
+    await assertFails(
+      outsider.firestore().collection('groups').doc().set({
+        name: 'X',
+        memberUids: ['uid-outsider'],
+        memberEmails: ['outsider@example.com'],
+        members: TEST_MEMBERS,
+        inviteCode: 'OUT001',
+        claudeApiKey: '',
+        createdBy: 'uid-outsider',
+      }),
+    );
+  });
+
+  it('作成時に他人を初期メンバーに含めることはできない', async () => {
+    // allowed な USER_A が、memberUids に別人を入れて作成しようとする
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertFails(
+      aCtx.firestore().collection('groups').doc().set({
+        name: 'X',
+        memberUids: [USER_A.uid, USER_B.uid],
+        memberEmails: [USER_A.email, USER_B.email],
+        members: TEST_MEMBERS,
+        inviteCode: 'OUT002',
+        claudeApiKey: '',
+        createdBy: USER_A.uid,
+      }),
+    );
+  });
 });
 
 describe('招待コードのリネーム', () => {

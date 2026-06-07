@@ -57,9 +57,10 @@ service cloud.firestore {
 
     match /groups/{groupId} {
       allow read:   if isAllowed();
-      // 作成者は自分自身をmemberUidsに含めなければならない
-      allow create: if isAllowed() &&
-                       request.auth.uid in request.resource.data.memberUids;
+      // 作成者本人だけが初期メンバー（他人を初期メンバーに含めることは不可）
+      allow create: if isAllowed()
+                       && request.resource.data.memberUids == [request.auth.uid]
+                       && request.resource.data.memberEmails == [request.auth.token.email];
       allow update: if isAllowed() && (joinsSelf() || leavesSelf() || editsSettings(groupId));
       allow delete: if false;
 
