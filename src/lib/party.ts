@@ -77,3 +77,25 @@ export function membersToArray(raw: unknown): Member[] {
 export function membersToMap(members: Member[]): Record<string, Member> {
   return Object.fromEntries(members.map((m) => [m.id, m]));
 }
+
+// 購読で受け取ったサーバー由来の members を、現在のローカル members にメンバー単位でマージする。
+// 変化があったメンバーだけ差し替えるため、自分が入力中（楽観更新済み）のメンバーは保持されやすい。
+// 固定ロスター前提なので current に無いメンバー（incoming のみに存在）は取り込まない。
+// 既知の制限: 同一メンバーを高速連打すると、確定前の古いサーバースナップショットが一瞬反映されて
+// カウントが揺れることがあるが、最終的に最新値へ収束する（恒久的なズレは生じない）。
+export function mergeMembers(
+  current: Member[],
+  incoming: Member[],
+): { merged: Member[]; changed: boolean } {
+  const byId = new Map(incoming.map((m) => [m.id, m]));
+  let changed = false;
+  const merged = current.map((m) => {
+    const next = byId.get(m.id);
+    if (next && JSON.stringify(next) !== JSON.stringify(m)) {
+      changed = true;
+      return next;
+    }
+    return m;
+  });
+  return { merged, changed };
+}

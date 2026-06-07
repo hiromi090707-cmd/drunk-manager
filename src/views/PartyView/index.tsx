@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { saveParty, listenToParty } from '../../lib/db';
+import { mergeMembers } from '../../lib/party';
 import type { PartyState } from '../../types';
 import { MembersTab } from './MembersTab';
 import { SplitTab, calculateSplit } from './SplitTab';
@@ -17,20 +18,8 @@ export function PartyView() {
     if (!partyState.id) return;
     listenerRef.current = listenToParty(partyState.id, (updated) => {
       const current = partyStateRef.current;
-      // サーバー由来の members（配列）を、現在のローカル members にメンバー単位でマージする。
-      // 自分が入力中のメンバーを巻き戻さないよう、各メンバーは「変化があった場合のみ」差し替える。
-      const incoming = updated.members ?? [];
-      const byId = new Map(incoming.map((m) => [m.id, m]));
-      let changedAny = false;
-      const merged = current.members.map((m) => {
-        const next = byId.get(m.id);
-        if (next && JSON.stringify(next) !== JSON.stringify(m)) {
-          changedAny = true;
-          return next;
-        }
-        return m;
-      });
-      if (changedAny) {
+      const { merged, changed } = mergeMembers(current.members, updated.members ?? []);
+      if (changed) {
         dispatch({ type: 'SET_PARTY_STATE', party: { ...current, members: merged } });
       }
     });

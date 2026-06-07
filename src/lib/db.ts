@@ -172,6 +172,8 @@ export function listenToParty(partyId: string, callback: (party: Party) => void)
 export async function updateMemberDrinks(partyId: string, member: Member): Promise<void> {
   if (!activeGroupId) return;
   const ref = doc(db, 'groups', activeGroupId, 'parties', partyId);
+  // member.id を Firestore のフィールドパスに使うため、id は `.~*/[]` を含まない安全なセグメントである前提
+  // （現行の固定 id は英小文字のみ）。動的メンバー導入時は FieldPath での指定に見直す。
   await updateDoc(ref, {
     [`members.${member.id}`]: member,
     updatedAt: serverTimestamp(),
