@@ -169,7 +169,7 @@ export function listenToParty(partyId: string, callback: (party: Party) => void)
 
 export async function updatePartyMemberDrinks(partyId: string, members: Member[]): Promise<void> {
   const partyRef = doc(partiesCollection(), String(partyId));
-  await updateDoc(partyRef, { members, updatedAt: serverTimestamp() });
+  await updateDoc(partyRef, { members: membersToMap(members), updatedAt: serverTimestamp() });
 }
 
 export async function migrateLocalData(): Promise<number> {
@@ -184,7 +184,7 @@ export async function migrateLocalData(): Promise<number> {
     if (!existing.exists()) {
       const { _docId, ...rest } = party;
       void _docId;
-      await setDoc(partyRef, { ...rest, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), migratedFromLocal: true });
+      await setDoc(partyRef, { ...rest, members: membersToMap(membersToArray(party.members)), createdAt: serverTimestamp(), updatedAt: serverTimestamp(), migratedFromLocal: true });
       migrated++;
     }
   }
