@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { membersToArray, membersToMap, mergeMembers } from './party';
-import type { Member } from '../types';
+import { membersToArray, membersToMap, mergeMembers, findActiveParty } from './party';
+import type { Member, Party } from '../types';
 
 const mkMember = (id: string): Member => ({
   id, name: id.toUpperCase(),
@@ -33,6 +33,27 @@ describe('membersToMap', () => {
     const map = membersToMap(arr);
     expect(Object.keys(map).sort()).toEqual(['a', 'b']);
     expect(map.a.id).toBe('a');
+  });
+});
+
+describe('findActiveParty', () => {
+  const party = (id: string, endTime?: string): Party => ({
+    _docId: id, areaName: '', storeName: '', startTime: '2026-06-08T10:00:00Z',
+    endTime, members: [], totalAmount: 0, splitRoles: {},
+  });
+
+  it('endTime 無しの party を進行中として返す', () => {
+    const history = [party('a', '2026-06-08T12:00:00Z'), party('b')];
+    expect(findActiveParty(history)?._docId).toBe('b');
+  });
+
+  it('全て終了済みなら null', () => {
+    const history = [party('a', '2026-06-08T12:00:00Z')];
+    expect(findActiveParty(history)).toBeNull();
+  });
+
+  it('空配列なら null', () => {
+    expect(findActiveParty([])).toBeNull();
   });
 });
 

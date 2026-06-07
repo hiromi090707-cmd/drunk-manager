@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { auth } from '../firebase';
 import { cleanup, leaveGroup, updateInviteCode } from '../lib/db';
 import { logout } from '../lib/auth';
-import { createNewParty, rosterOf } from '../lib/party';
+import { createNewParty, rosterOf, findActiveParty, buildEditPartyState } from '../lib/party';
 
 export function HomeView() {
   const { state, dispatch } = useApp();
@@ -28,6 +28,14 @@ export function HomeView() {
   }
 
   async function handleNewParty() {
+    const active = findActiveParty(state.historyData);
+    if (active) {
+      // 進行中の飲み会にそのまま参加（新規作成しない＝乱立防止）
+      dispatch({ type: 'SET_PARTY_STATE', party: buildEditPartyState(active) });
+      dispatch({ type: 'SET_PARTY_TAB', tab: 'members' });
+      dispatch({ type: 'SET_VIEW', view: 'party' });
+      return;
+    }
     try {
       const newParty = await createNewParty(rosterOf(state.groupInfo));
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
@@ -63,6 +71,8 @@ export function HomeView() {
     await logout();
   }
 
+  const activeParty = findActiveParty(state.historyData);
+
   return (
     <div className="view" id="view-home">
       <div className="text-center mt-4 mb-4">
@@ -87,9 +97,11 @@ export function HomeView() {
           className="btn btn-primary w-full p-4"
           style={{ fontSize: '1.25rem', marginBottom: '0.75rem', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}
         >
-          🍺 飲み会スタート
+          {activeParty ? '🍺 進行中の飲み会に参加' : '🍺 飲み会スタート'}
         </button>
-        <p className="text-muted" style={{ fontSize: '0.8rem' }}>いつものメンバーで新しい記録を始めます</p>
+        <p className="text-muted" style={{ fontSize: '0.8rem' }}>
+          {activeParty ? 'みんなが編集中の飲み会にそのまま合流します' : 'いつものメンバーで新しい記録を始めます'}
+        </p>
       </div>
 
       <div className="glass text-center p-4 mt-4">

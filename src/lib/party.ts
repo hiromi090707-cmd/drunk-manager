@@ -72,6 +72,12 @@ export function membersToArray(raw: unknown): Member[] {
   return [];
 }
 
+// 進行中（endTime を持たない）の party を1件返す。history は startTime 降順前提なので
+// 先頭にヒットした最新の進行中を返す。無ければ null。
+export function findActiveParty(history: Party[]): Party | null {
+  return history.find((p) => !p.endTime) ?? null;
+}
+
 // アプリ内部の Member[] を Firestore 保存用マップ（id キー）に変換する。
 // マップ化により members.<id> 単位の部分更新が可能になり、メンバー間の更新衝突を防げる。
 export function membersToMap(members: Member[]): Record<string, Member> {
