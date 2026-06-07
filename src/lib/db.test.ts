@@ -247,7 +247,32 @@ describe('パーティの保存・取得', () => {
     const saved = parties.find((p) => p.storeName === '居酒屋A' && p.totalAmount === 5000)!;
     expect(saved.areaName).toBe('渋谷');
     expect(saved.totalAmount).toBe(5000);
-    expect(saved.members.length).toBe(2);
+    // saved.members は listenToParties 経由なら配列に正規化済み。
+    // 直接 getDoc で見る場合はマップなので、両対応で件数を数える。
+    const count = Array.isArray(saved.members)
+      ? saved.members.length
+      : Object.keys(saved.members as object).length;
+    expect(count).toBe(2);
+  });
+
+  it('saveParty は members をマップ形式（id キー）で Firestore に保存する', async () => {
+    await signInAs(USER_A);
+    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MAP001');
+    const gid = getActiveGroup()!;
+    const partyId = await createParty({
+      areaName: '', storeName: '', startTime: new Date().toISOString(),
+      members: [
+        { id: 'm1', name: 'メンバー1', drinks: { beer: 2, highball: 0, sour: 0, other: 0 }, megaDrinks: { beer: 0, highball: 0, sour: 0, other: 0 }, totalDrinks: 2 },
+      ],
+      totalAmount: 0, splitRoles: {},
+    });
+    // withSecurityRulesDisabled で生データ（マップ）を直接確認
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().doc(`groups/${gid}/parties/${partyId}`).get();
+      const data = snap.data()!;
+      expect(Array.isArray(data.members)).toBe(false);
+      expect(data.members.m1.totalDrinks).toBe(2);
+    });
   });
 });
 

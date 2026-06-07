@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Group, Party, Member } from '../types';
+import { membersToMap, membersToArray } from './party';
 
 let activeGroupId: string | null = null;
 let historyUnsubscribe: Unsubscribe | null = null;
@@ -121,8 +122,10 @@ export async function getClaudeApiKey(): Promise<string> {
 }
 
 export async function createParty(initialData: Partial<Party>): Promise<string> {
+  const { members, ...rest } = initialData;
   const docRef = await addDoc(partiesCollection(), {
-    ...initialData,
+    ...rest,
+    ...(members ? { members: membersToMap(members) } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -135,10 +138,9 @@ export async function deleteParty(partyId: string): Promise<void> {
 
 export async function saveParty(partyData: Party): Promise<void> {
   const partyRef = doc(partiesCollection(), String(partyData.id ?? partyData._docId));
-  // _docIdはFirestoreのドキュメントIDと冗長なので保存しない
-  const { _docId, ...rest } = partyData;
+  const { _docId, members, ...rest } = partyData;
   void _docId;
-  await setDoc(partyRef, { ...rest, updatedAt: serverTimestamp() }, { merge: true });
+  await setDoc(partyRef, { ...rest, members: membersToMap(members), updatedAt: serverTimestamp() }, { merge: true });
 }
 
 export function listenToParties(callback: (parties: Party[]) => void): Unsubscribe {
@@ -146,7 +148,10 @@ export function listenToParties(callback: (parties: Party[]) => void): Unsubscri
   const q = query(partiesCollection(), orderBy('startTime', 'desc'));
   historyUnsubscribe = onSnapshot(q, (snapshot) => {
     const parties: Party[] = [];
-    snapshot.forEach((d) => parties.push({ ...d.data(), _docId: d.id } as Party));
+    snapshot.forEach((d) => {
+      const data = d.data();
+      parties.push({ ...data, members: membersToArray(data.members), _docId: d.id } as Party);
+    });
     callback(parties);
   }, console.error);
   return historyUnsubscribe;
@@ -155,7 +160,10 @@ export function listenToParties(callback: (parties: Party[]) => void): Unsubscri
 export function listenToParty(partyId: string, callback: (party: Party) => void): Unsubscribe {
   const partyRef = doc(partiesCollection(), String(partyId));
   return onSnapshot(partyRef, (d) => {
-    if (d.exists()) callback({ ...d.data(), _docId: d.id } as Party);
+    if (d.exists()) {
+      const data = d.data();
+      callback({ ...data, members: membersToArray(data.members), _docId: d.id } as Party);
+    }
   }, console.error);
 }
 
