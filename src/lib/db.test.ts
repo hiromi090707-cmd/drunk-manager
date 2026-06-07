@@ -494,6 +494,27 @@ describe('groups 更新ルールの最小権限', () => {
       expect(data?.memberUids).toContain(USER_B.uid);
     });
   });
+
+  it('メンバーは claudeApiKey のみを変更できる', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'APIK01');
+
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertSucceeds(
+      aCtx.firestore().collection('groups').doc(group.id).update({ claudeApiKey: 'sk-test' }),
+    );
+  });
+
+  it('非メンバーは設定（claudeApiKey）を変更できない', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'APIK02');
+
+    // USER_B は当グループの非メンバー
+    const bCtx = testEnv.authenticatedContext(USER_B.uid, { email: USER_B.email });
+    await assertFails(
+      bCtx.firestore().collection('groups').doc(group.id).update({ claudeApiKey: 'sk-evil' }),
+    );
+  });
 });
 
 describe('招待コードのリネーム', () => {
