@@ -4,6 +4,7 @@ import { auth } from '../firebase';
 import { cleanup, leaveGroup, updateInviteCode } from '../lib/db';
 import { logout } from '../lib/auth';
 import { createNewParty, rosterOf, findActiveParty, buildEditPartyState } from '../lib/party';
+import { BrandLogo } from '../components/BrandLogo';
 import { OnboardingOverlay } from '../components/OnboardingOverlay';
 import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding';
 
@@ -84,49 +85,41 @@ export function HomeView() {
   return (
     <div className="view" id="view-home">
       {showOnboarding && <OnboardingOverlay onClose={handleCloseOnboarding} />}
-      <div className="text-center mt-4 mb-4">
-        <h1 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '5rem',
-          background: 'var(--accent-gradient)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          lineHeight: 1,
-          filter: 'drop-shadow(0 0 24px rgba(232, 137, 10, 0.35))',
-          marginBottom: '0.4rem',
-        }}>
-          Drunk
-        </h1>
-        <p className="text-muted" style={{ fontSize: '0.8rem', letterSpacing: '0.2em' }}>飲 み 会 マ ネ ー ジ ャ ー</p>
+      <div className="mt-4 mb-4">
+        <BrandLogo size="lg" lantern subtitle="のみかい マネージャー" />
       </div>
 
-      <div className="glass text-center p-4 mt-8">
-        <button
-          onClick={handleNewParty}
-          className="btn btn-primary w-full p-4"
-          style={{ fontSize: '1.25rem', marginBottom: '0.75rem', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}
-        >
-          {activeParty ? '🍺 進行中の飲み会に参加' : '🍺 飲み会スタート'}
+      <div className="mt-6">
+        {activeParty && (
+          <div className="text-center" style={{ marginBottom: '0.6rem' }}>
+            <span className="sticker"><span className="sticker-dot" />進行中の飲み会があります</span>
+          </div>
+        )}
+        <button onClick={handleNewParty} className="btn-3d">
+          <div>
+            <div className="btn-3d-title">{activeParty ? '飲み会に参加' : '飲み会スタート'}</div>
+            <div className="btn-3d-sub">
+              {activeParty ? 'みんなが編集中の記録にそのまま合流' : 'いつものメンバーで新しい記録を始めます'}
+            </div>
+          </div>
+          <span className="btn-3d-ic">🍺</span>
         </button>
-        <p className="text-muted" style={{ fontSize: '0.8rem' }}>
-          {activeParty ? 'みんなが編集中の飲み会にそのまま合流します' : 'いつものメンバーで新しい記録を始めます'}
-        </p>
       </div>
 
-      <div className="glass text-center p-4 mt-4">
-        <button
-          onClick={() => { dispatch({ type: 'SET_STATS_DATE', date: new Date() }); dispatch({ type: 'SET_VIEW', view: 'stats' }); }}
-          className="btn w-full p-3"
-          style={{ fontSize: '1.125rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)' }}
-        >
-          📊 データと集計を見る
-        </button>
-        <p className="text-muted" style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}>
-          過去 {state.historyData.length} 回の記録があります
-        </p>
-      </div>
+      <div className="sec-divider"><span>記録をふりかえる</span><div className="sec-line" /></div>
+      <button
+        onClick={() => { dispatch({ type: 'SET_STATS_DATE', date: new Date() }); dispatch({ type: 'SET_VIEW', view: 'stats' }); }}
+        className="btn-3d btn-3d-dark"
+      >
+        <div>
+          <div className="btn-3d-title" style={{ fontSize: '1.1rem' }}>データと集計を見る</div>
+          <div className="btn-3d-sub">これまで {state.historyData.length} 回の記録</div>
+        </div>
+        <span className="btn-3d-ic">📊</span>
+      </button>
 
-      <div className="glass p-3 mt-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="sec-divider"><span>この席のあなた</span><div className="sec-line" /></div>
+      <div className="glass p-3" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {user?.photoURL && <img src={user.photoURL} style={{ width: 28, height: 28, borderRadius: '50%' }} />}
           <span className="text-muted" style={{ fontSize: '0.8rem' }}>{user?.displayName ?? ''}</span>

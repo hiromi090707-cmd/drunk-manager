@@ -16,14 +16,14 @@ export function OnboardingOverlay({ onClose }: { onClose: () => void }) {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 100,
-        background: 'rgba(18, 12, 8, 0.92)', backdropFilter: 'blur(4px)',
+        background: 'rgba(12, 8, 5, 0.93)', backdropFilter: 'blur(4px)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: '2rem', textAlign: 'center',
       }}
     >
       <div className="glass p-4" style={{ maxWidth: 360, width: '100%' }}>
         <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>{slide.emoji}</div>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.75rem', color: 'var(--accent-color)' }}>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', marginBottom: '0.75rem', color: 'var(--accent-bright)' }}>
           {slide.title}
         </h2>
         <p className="text-muted" style={{ fontSize: '0.95rem', lineHeight: 1.7, minHeight: '5.5rem' }}>
