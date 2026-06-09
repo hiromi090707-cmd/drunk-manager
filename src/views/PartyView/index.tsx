@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { saveParty, listenToParty } from '../../lib/db';
-import { mergeMembers } from '../../lib/party';
+import { mergeMembers, orderByRoster } from '../../lib/party';
 import type { PartyState } from '../../types';
 import { MembersTab } from './MembersTab';
 import { SplitTab, calculateSplit } from './SplitTab';
@@ -62,6 +62,10 @@ export function PartyView() {
     dispatch({ type: 'SET_EDITING_EXISTING', value: false });
     dispatch({ type: 'SET_VIEW', view: isEditing ? 'stats' : 'home' });
   }
+
+  // 表示順は名簿(Group.members)順に固定する。partyState.members の順序はデータの出どころで
+  // 揺れる（新規=名簿順 / Firestoreマップ読取=id順）ため、表示直前にここで一元的に整列する。
+  const orderedParty = { ...partyState, members: orderByRoster(partyState.members, state.groupInfo?.members ?? []) };
 
   const tabs = [
     { id: 'members' as const, label: '🍻 メンバー' },
@@ -126,9 +130,9 @@ export function PartyView() {
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
-          {activePartyTab === 'members' && <MembersTab partyState={partyState} onUpdate={updatePartyState} />}
-          {activePartyTab === 'split' && <SplitTab partyState={partyState} onUpdate={updatePartyState} />}
-          {activePartyTab === 'summary' && <SummaryTab partyState={partyState} onUpdate={updatePartyState} />}
+          {activePartyTab === 'members' && <MembersTab partyState={orderedParty} onUpdate={updatePartyState} />}
+          {activePartyTab === 'split' && <SplitTab partyState={orderedParty} onUpdate={updatePartyState} />}
+          {activePartyTab === 'summary' && <SummaryTab partyState={orderedParty} onUpdate={updatePartyState} />}
         </div>
       </div>
   );

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { membersToArray, membersToMap, mergeMembers, findActiveParty, rosterOf, zeroMember } from './party';
+import { membersToArray, membersToMap, mergeMembers, findActiveParty, rosterOf, zeroMember, orderByRoster } from './party';
 import type { Group, Member, Party } from '../types';
 
 const mkMember = (id: string): Member => ({
@@ -104,6 +104,27 @@ describe('rosterOf', () => {
   it('removed のメンバーを除外する', () => {
     const g = mkGroup([{ id: 'a', name: 'A' }, { id: 'b', name: 'B', removed: true }]);
     expect(rosterOf(g).map((m) => m.id)).toEqual(['a']);
+  });
+});
+
+describe('orderByRoster', () => {
+  const roster = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+
+  it('名簿の並び順に整列する（データの出どころに依存しない）', () => {
+    const members = [{ id: 'c' }, { id: 'a' }, { id: 'b' }];
+    expect(orderByRoster(members, roster).map((m) => m.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('名簿に無いメンバーは元の相対順を保って末尾に置く', () => {
+    const members = [{ id: 'z' }, { id: 'b' }, { id: 'y' }, { id: 'a' }];
+    expect(orderByRoster(members, roster).map((m) => m.id)).toEqual(['a', 'b', 'z', 'y']);
+  });
+
+  it('元の配列を破壊しない', () => {
+    const members = [{ id: 'c' }, { id: 'a' }];
+    const before = [...members];
+    orderByRoster(members, roster);
+    expect(members).toEqual(before);
   });
 });
 

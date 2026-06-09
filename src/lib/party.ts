@@ -85,6 +85,18 @@ export function findActiveParty(history: Party[]): Party | null {
   return history.find((p) => !p.endTime) ?? null;
 }
 
+// members を名簿(roster)の並び順に整列する。名簿に無いメンバーは元の相対順を保って末尾に置く。
+// 表示順をデータの出どころ（新規作成=名簿順 / Firestoreマップ読取=id順）に依存させないため。
+export function orderByRoster<T extends { id: string }>(
+  members: T[],
+  roster: { id: string }[],
+): T[] {
+  const rank = new Map(roster.map((m, i) => [m.id, i] as const));
+  return [...members].sort(
+    (a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity),
+  );
+}
+
 // アプリ内部の Member[] を Firestore 保存用マップ（id キー）に変換する。
 // マップ化により members.<id> 単位の部分更新が可能になり、メンバー間の更新衝突を防げる。
 export function membersToMap(members: Member[]): Record<string, Member> {
