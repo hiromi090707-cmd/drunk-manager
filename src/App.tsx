@@ -11,6 +11,7 @@ import { HomeView } from './views/HomeView';
 import { PartyView } from './views/PartyView';
 import { StatsView } from './views/StatsView';
 import { ShareChoiceView } from './views/ShareChoiceView';
+import { MemberManageView } from './views/MemberManageView';
 
 export function App() {
   const { state, dispatch } = useApp();
@@ -69,5 +70,6 @@ export function App() {
     case 'party':       return <PartyView />;
     case 'stats':       return <StatsView />;
     case 'shareChoice': return <ShareChoiceView />;
+    case 'memberManage': return <MemberManageView />;
   }
 }

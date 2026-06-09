@@ -1,7 +1,7 @@
 export type DrinkType = 'beer' | 'highball' | 'sour' | 'other';
 export type PartyTab = 'members' | 'split' | 'summary';
 export type StatsTab = 'day' | 'month' | 'year' | 'all';
-export type AppView = 'loading' | 'login' | 'groupSetup' | 'home' | 'party' | 'stats' | 'shareChoice';
+export type AppView = 'loading' | 'login' | 'groupSetup' | 'home' | 'party' | 'stats' | 'shareChoice' | 'memberManage';
 
 export interface Member {
   id: string;
