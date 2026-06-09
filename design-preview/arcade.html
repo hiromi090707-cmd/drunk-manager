@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Drunk — DARK ARCADE 居酒屋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=RocknRoll+One&family=Reggae+One&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg-0:#0c0805;
+    --bg-1:#180e07;
+    --wood:#2a160a;
+    --card:#20130a;
+    --card-2:#2c1a0d;
+    --text:#fbedd2;
+    --dim:#c2a279;
+    --faint:#8a6e4d;
+    --amber:#ffb43d;
+    --amber-d:#f0961a;
+    --ember:#d63f1e;
+    --ember-d:#9c2a10;        /* ボタンの厚み/アウトライン */
+    --gold-grad:linear-gradient(180deg,#ffd368 0%,#ffb43d 45%,#f0961a 100%);
+    --seal:#e23b22;
+    --green:#39d27a;
+    --grape:#a35cff;          /* ポップ差し色（その他系） */
+    --line:rgba(255,180,61,0.22);
+    --line-2:rgba(255,180,61,0.4);
+    --display:'Dela Gothic One',cursive;
+    --pop:'RocknRoll One',sans-serif;
+    --retro:'Reggae One',cursive;
+    --body:'M PLUS Rounded 1c',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{background:#070403;color:#ccc;font-family:var(--body);padding:2rem 1rem 4rem;display:flex;flex-direction:column;align-items:center;gap:1.2rem;
+    background-image:radial-gradient(ellipse 50% 30% at 50% 0%, rgba(240,150,26,0.06), transparent 70%);}
+  .head{text-align:center;color:#b89a72;font-size:0.82rem;}
+  .head b{color:var(--amber);font-family:var(--display);font-size:1.05rem;}
+  .frames{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .lbl{text-align:center;color:var(--dim);font-family:var(--pop);font-size:0.85rem;margin-bottom:0.6rem;letter-spacing:0.1em;}
+  .phone{width:390px;max-width:92vw;border-radius:32px;overflow:hidden;position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,180,61,0.08);}
+  .scr{height:790px;position:relative;overflow:hidden;background:var(--bg-0);
+    background-image:
+      radial-gradient(120% 52% at 50% -10%, rgba(255,180,61,0.20), rgba(214,63,30,0.05) 40%, transparent 64%),
+      radial-gradient(90% 40% at 100% 105%, rgba(214,63,30,0.10), transparent 60%),
+      repeating-linear-gradient(91deg, transparent 0 17px, rgba(90,46,18,0.16) 18px 19px),
+      linear-gradient(180deg,var(--bg-1),var(--bg-0) 62%);}
+  /* グレイン＋スキャンライン（アーケード感） */
+  .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+    background-image:repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0 2px, transparent 2px 4px);opacity:.35;}
+  .scr::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;box-shadow:inset 0 0 120px 24px rgba(0,0,0,0.62);}
+  .scroll{position:absolute;inset:0;overflow-y:auto;padding:0 20px 110px;z-index:2;}
+  .scroll::-webkit-scrollbar{width:0;}
+  .sb{height:18px;}
+
+  /* ── ヒーロー ── */
+  .hero{text-align:center;padding-top:24px;position:relative;}
+  .lantern{width:66px;height:82px;margin:0 auto 2px;position:relative;border-radius:50%/42%;
+    background:radial-gradient(60% 50% at 50% 45%, rgba(255,214,120,0.95), rgba(240,150,26,0.9) 55%, #b9460f 100%);
+    box-shadow:0 0 46px 7px rgba(255,180,61,0.5), inset 0 -7px 22px rgba(120,30,0,0.6);animation:flick 4s ease-in-out infinite;}
+  .lantern::after{content:"呑";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--retro);font-size:2rem;color:#7a1606;}
+  @keyframes flick{0%,100%{box-shadow:0 0 46px 7px rgba(255,180,61,0.5), inset 0 -7px 22px rgba(120,30,0,0.6);}50%{box-shadow:0 0 58px 11px rgba(255,180,61,0.7), inset 0 -7px 22px rgba(120,30,0,0.6);}}
+
+  /* ゲームタイトル風ロゴ */
+  .logo{font-family:var(--display);font-size:4.6rem;line-height:0.9;letter-spacing:0.005em;color:#ffcf5e;
+    -webkit-text-stroke:3px #6e2a06;
+    text-shadow:
+      0 3px 0 #b9460f, 0 5px 0 #9c2a10,
+      0 7px 0 #7a1f0a, 0 10px 16px rgba(0,0,0,0.55),
+      0 0 26px rgba(255,180,61,0.45);
+    transform:rotate(-2deg);margin:2px 0 6px;}
+  .ribbon{display:inline-block;font-family:var(--pop);font-size:0.7rem;letter-spacing:0.32em;color:#3a1402;
+    background:var(--gold-grad);padding:4px 16px;border-radius:999px;border:2px solid #6e2a06;
+    box-shadow:0 3px 0 #6e2a06;}
+
+  /* 進行中ステッカー */
+  .sticker{position:absolute;top:18px;right:6px;transform:rotate(9deg);font-family:var(--pop);font-size:0.7rem;color:#06371b;
+    background:var(--green);padding:6px 11px;border-radius:10px;border:2px solid #064d27;box-shadow:0 3px 0 #064d27;}
+  .sticker .d{display:inline-block;width:7px;height:7px;border-radius:50%;background:#06371b;margin-right:5px;animation:pulse 1.3s infinite;vertical-align:middle;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ── 立体ボタン（ゲームUI） ── */
+  .btn3d{width:100%;border:3px solid #6e2a06;cursor:pointer;border-radius:18px;padding:18px 18px 16px;text-align:left;
+    color:#3a1402;background:var(--gold-grad);position:relative;
+    box-shadow:0 7px 0 #9c2a10, 0 12px 18px rgba(0,0,0,0.45);
+    transition:transform .08s ease, box-shadow .08s ease;display:flex;align-items:center;justify-content:space-between;}
+  .btn3d:active{transform:translateY(5px);box-shadow:0 2px 0 #9c2a10, 0 5px 10px rgba(0,0,0,0.4);}
+  .btn3d .t{font-family:var(--display);font-size:1.25rem;letter-spacing:0.01em;}
+  .btn3d .s{font-family:var(--body);font-weight:700;font-size:0.72rem;color:#6e2a06;margin-top:5px;}
+  .btn3d .ic{font-size:2rem;filter:drop-shadow(0 2px 0 rgba(0,0,0,0.15));}
+  .hero-cta{margin-top:22px;}
+
+  /* セカンダリ立体（暗トーン） */
+  .btn3d.dark{background:linear-gradient(180deg,#34200f,#241408);color:var(--text);border-color:#0c0805;box-shadow:0 6px 0 #0c0805,0 10px 16px rgba(0,0,0,0.4);}
+  .btn3d.dark:active{box-shadow:0 2px 0 #0c0805,0 5px 10px rgba(0,0,0,0.35);}
+  .btn3d.dark .s{color:var(--faint);}
+
+  /* セクション見出し */
+  .sec{display:flex;align-items:center;gap:10px;margin:26px 2px 12px;}
+  .sec span{font-family:var(--pop);font-size:0.8rem;color:var(--dim);letter-spacing:0.12em;white-space:nowrap;}
+  .sec .l{flex:1;height:2px;border-radius:2px;background:repeating-linear-gradient(90deg,var(--line-2) 0 6px, transparent 6px 10px);}
+
+  /* パネル */
+  .panel{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 8px 0 rgba(0,0,0,0.35);}
+  .panel .row{display:flex;align-items:center;justify-content:space-between;}
+  .panel .big{font-family:var(--display);font-size:2.2rem;color:#ffcf5e;-webkit-text-stroke:2px #6e2a06;text-shadow:0 2px 0 #9c2a10;line-height:1;}
+  .panel .big small{-webkit-text-stroke:0;font-family:var(--body);font-weight:800;font-size:0.95rem;color:var(--dim);text-shadow:none;}
+  .panel .l{font-family:var(--pop);color:var(--faint);font-size:0.76rem;margin-bottom:4px;}
+
+  .footer{margin-top:16px;display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--card);border:2px solid var(--line);border-radius:16px;}
+  .footer .av{width:34px;height:34px;border-radius:10px;background:var(--gold-grad);border:2px solid #6e2a06;display:grid;place-items:center;font-family:var(--display);color:#3a1402;font-size:1rem;}
+  .footer .nm{color:var(--dim);font-weight:700;font-size:0.85rem;}
+  .footer .lo{background:transparent;border:2px solid var(--line);color:var(--dim);border-radius:11px;padding:7px 13px;font-weight:800;font-size:0.74rem;font-family:var(--pop);cursor:pointer;}
+
+  .invite{margin-top:14px;border:2px dashed var(--line-2);border-radius:16px;padding:14px 16px;background:rgba(255,180,61,0.05);display:flex;align-items:center;justify-content:space-between;}
+  .invite .k{font-family:var(--pop);color:var(--faint);font-size:0.66rem;letter-spacing:0.16em;}
+  .invite .v{font-family:var(--display);letter-spacing:0.16em;color:var(--amber);font-size:1.2rem;margin-top:4px;-webkit-text-stroke:1px #6e2a06;}
+  .invite .ch{background:transparent;border:2px solid var(--line-2);color:var(--amber);border-radius:11px;padding:7px 13px;font-weight:800;font-size:0.72rem;font-family:var(--pop);cursor:pointer;}
+
+  /* ── 飲み会中 ── */
+  .phead{display:flex;align-items:flex-end;justify-content:space-between;padding-top:22px;}
+  .phead .w{font-family:var(--retro);font-size:1.5rem;color:var(--text);}
+  .phead .m{font-family:var(--pop);color:var(--dim);font-size:0.72rem;margin-top:5px;}
+  .phead .tot b{font-family:var(--display);font-size:2.1rem;color:#ffcf5e;-webkit-text-stroke:2px #6e2a06;text-shadow:0 2px 0 #9c2a10;}
+  .phead .tot small{display:block;font-family:var(--pop);color:var(--faint);font-size:0.6rem;letter-spacing:0.12em;text-align:right;}
+
+  .tabs{display:flex;gap:7px;margin:16px 0;}
+  .tabs button{flex:1;border:2px solid #0c0805;background:linear-gradient(180deg,#34200f,#241408);color:var(--dim);font-family:var(--pop);font-size:0.82rem;padding:11px 4px;border-radius:13px;cursor:pointer;box-shadow:0 4px 0 #0c0805;}
+  .tabs button.on{background:var(--gold-grad);color:#3a1402;border-color:#6e2a06;box-shadow:0 4px 0 #9c2a10;}
+
+  .hint{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 14px;}
+  .hint p{font-family:var(--pop);color:var(--faint);font-size:0.74rem;}
+  .mega{border:2px solid var(--line);background:transparent;color:var(--dim);font-family:var(--pop);font-size:0.72rem;padding:7px 13px;border-radius:999px;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,0.3);}
+  .mega.on{background:var(--ember);border-color:#6e1306;color:#fff;box-shadow:0 3px 0 #6e1306,0 0 16px rgba(214,63,30,0.5);}
+
+  .seat{margin-bottom:14px;border-radius:18px;padding:14px;border:2px solid var(--line);
+    background:linear-gradient(180deg,var(--card-2),var(--card));box-shadow:0 7px 0 rgba(0,0,0,0.35);}
+  .seat.you{border-color:var(--amber-d);box-shadow:0 7px 0 rgba(0,0,0,0.35),0 0 0 2px rgba(255,180,61,0.25),0 0 26px rgba(255,180,61,0.14);}
+  .seat .h{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;margin-bottom:12px;border-bottom:2px dotted var(--line);}
+  .seat .nm{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.08rem;}
+  .seat .me{font-family:var(--pop);font-size:0.58rem;color:#fff;background:var(--seal);border-radius:7px;padding:3px 8px;transform:rotate(-5deg);border:2px solid #7a1606;box-shadow:0 2px 0 #7a1606;}
+  .seat .cn{font-family:var(--pop);color:var(--amber);font-size:0.86rem;}
+
+  .drinks{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  .dr{border:2px solid var(--line);background:rgba(0,0,0,0.22);border-radius:14px;padding:11px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,0.3);transition:transform .08s ease, box-shadow .08s ease;}
+  .dr:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,0.3);}
+  .dr.has{background:rgba(255,180,61,0.12);border-color:var(--amber-d);box-shadow:0 4px 0 #6e2a06;}
+  .dr .e{font-size:1.55rem;line-height:1;}
+  .dr .n{font-family:var(--pop);color:var(--faint);font-size:0.58rem;}
+  .dr .c{font-family:var(--display);font-size:1.15rem;color:var(--faint);-webkit-text-stroke:1px transparent;}
+  .dr.has .c{color:#ffcf5e;-webkit-text-stroke:1px #6e2a06;}
+
+  .nav{position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:space-around;padding:11px 8px 22px;
+    background:rgba(12,8,5,0.86);backdrop-filter:blur(12px);border-top:2px solid var(--line);}
+  .nav button{background:none;border:none;color:var(--faint);font-family:var(--pop);font-size:0.64rem;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+  .nav button.on{color:var(--amber);}
+  .nav .ic{font-size:1.2rem;}
+</style>
+</head>
+<body>
+  <div class="head"><b>Drunk — DARK ARCADE 居酒屋</b><br/>提灯カウンター × 昭和レトロ × ゲーム風キャッチー（Drunk英字ロゴ固定）</div>
+  <div class="frames">
+
+    <!-- ホーム -->
+    <div>
+      <div class="lbl">ホーム</div>
+      <div class="phone"><div class="scr"><div class="scroll">
+        <div class="sb"></div>
+        <div class="hero">
+          <div class="sticker"><span class="d"></span>進行中!</div>
+          <div class="lantern"></div>
+          <div class="logo">Drunk</div>
+          <div class="ribbon">のみかい マネージャー</div>
+        </div>
+
+        <button class="btn3d hero-cta">
+          <div><div class="t">飲み会に参加</div><div class="s">みんなが編集中の記録にそのまま合流</div></div>
+          <div class="ic">🍺</div>
+        </button>
+
+        <div class="sec"><span>記録をふりかえる</span><div class="l"></div></div>
+        <button class="btn3d dark">
+          <div><div class="t" style="font-size:1.1rem;">データと集計を見る</div><div class="s">これまで 42 回の宴</div></div>
+          <div class="ic">📊</div>
+        </button>
+
+        <div class="sec"><span>この席のあなた</span><div class="l"></div></div>
+        <div class="footer">
+          <div style="display:flex;align-items:center;gap:10px;"><div class="av">H</div><div class="nm">hiromi</div></div>
+          <button class="lo">ログアウト</button>
+        </div>
+        <div class="invite">
+          <div><div class="k">招待コード</div><div class="v">SAKEBA42</div></div>
+          <button class="ch">変更</button>
+        </div>
+      </div></div></div>
+    </div>
+
+    <!-- 飲み会中 -->
+    <div>
+      <div class="lbl">飲み会中</div>
+      <div class="phone"><div class="scr">
+        <div class="scroll">
+          <div class="sb"></div>
+          <div class="phead">
+            <div><div class="w">新橋・とり鉄</div><div class="m">21:14〜 ・ <span style="color:var(--green);">●</span> 4人が編集中</div></div>
+            <div class="tot"><b>23</b><small>TOTAL杯</small></div>
+          </div>
+
+          <div class="tabs"><button class="on">🍻 メンバー</button><button>💰 割り勘</button><button>✨ 要約</button></div>
+
+          <div class="hint"><p>タップ＋1 ・ 長押し−1</p><button class="mega">メガ入力 OFF</button></div>
+
+          <div class="seat you">
+            <div class="h"><div class="nm">ひろみ <span class="me">あなた</span></div><div class="cn">計 6杯 / メガ1</div></div>
+            <div class="drinks">
+              <div class="dr has"><span class="e">🍺</span><span class="n">ビール</span><span class="c">3</span></div>
+              <div class="dr has"><span class="e">🥃</span><span class="n">ハイ</span><span class="c">2</span></div>
+              <div class="dr"><span class="e">🍋</span><span class="n">サワー</span><span class="c">0</span></div>
+              <div class="dr has"><span class="e">🍷</span><span class="n">その他</span><span class="c">1</span></div>
+            </div>
+          </div>
+          <div class="seat">
+            <div class="h"><div class="nm">そうが</div><div class="cn">計 5杯</div></div>
+            <div class="drinks">
+              <div class="dr has"><span class="e">🍺</span><span class="n">ビール</span><span class="c">4</span></div>
+              <div class="dr"><span class="e">🥃</span><span class="n">ハイ</span><span class="c">0</span></div>
+              <div class="dr has"><span class="e">🍋</span><span class="n">サワー</span><span class="c">1</span></div>
+              <div class="dr"><span class="e">🍷</span><span class="n">その他</span><span class="c">0</span></div>
+            </div>
+          </div>
+          <div class="seat">
+            <div class="h"><div class="nm">たくみ</div><div class="cn">計 7杯</div></div>
+            <div class="drinks">
+              <div class="dr has"><span class="e">🍺</span><span class="n">ビール</span><span class="c">2</span></div>
+              <div class="dr has"><span class="e">🥃</span><span class="n">ハイ</span><span class="c">3</span></div>
+              <div class="dr has"><span class="e">🍋</span><span class="n">サワー</span><span class="c">2</span></div>
+              <div class="dr"><span class="e">🍷</span><span class="n">その他</span><span class="c">0</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="on"><span class="ic">🏮</span>ホーム</button>
+          <button><span class="ic">🍻</span>飲み会</button>
+          <button><span class="ic">📊</span>集計</button>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</body>
+</html>

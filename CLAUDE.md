@@ -80,9 +80,12 @@ VITE_FIREBASE_APP_ID
 
 ## デザイン
 
-- テーマ: 居酒屋アンバー（背景: `#120c08`、アクセント: `#e8890a`〜`#d63f1e`）
-- タイトルフォント: Dela Gothic One
-- 本文フォント: M PLUS Rounded 1c
+- テーマ: **DARK ARCADE 居酒屋**（提灯カウンター × 昭和レトロ × ゲーム風キャッチー）。背景 `#0c0805`、アクセント `#f0961a`〜`#d63f1e`、提灯の灯り `#ffb43d`/`#ffcf5e`、立体縁取り `--outline #6e2a06`・厚み影 `--depth #9c2a10`
+- フォント: タイトル `Dela Gothic One`（`--font-display`）/ 本文 `M PLUS Rounded 1c`（`--font-family`）/ ポップ見出し `RocknRoll One`（`--font-pop`）/ 装飾 `Reggae One`（`--font-retro`）。**明朝は使わない**
+- **タイトルロゴは英字 "Drunk" 固定**（和文ロゴ化しない）。`BrandLogo` コンポーネント（`logo-3d` 立体ロゴ＋任意で `lantern` 提灯＋`logo-sub` リボン）に集約。Login/Home/GroupSetup で使用
+- 共通クラス（`src/index.css` の `@layer components`）: `glass`（立体パネル）/ `btn`・`btn-primary`（金の立体）/ `btn-3d`・`btn-3d-dark`（ヒーローCTA）/ `input-field` / `bottom-nav` / `sticker`（進行中）/ `sync-badge`（リアルタイム同期）/ `sec-divider`（点線見出し）/ `seat`（メンバー席）/ `lantern`。**カスタムクラスは必ず `@layer components`**（Tailwind v4）
+- **データの無いUIは出さない**: ログインユーザー↔メンバーの紐付けが未実装のため「自分の席」ハイライトはしない。プレゼンス未実装のため「N人が編集中」の件数は出さず、購読中の事実のみ `sync-badge` で「リアルタイム同期」と表示する
+- デザイン参照モック: `design-preview/arcade.html`（ビルド対象外の静的モック）
 
 ## ワークフロー
 
