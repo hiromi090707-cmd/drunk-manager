@@ -5,13 +5,14 @@ interface Props {
 }
 
 export function BrandLogo({ size = 'lg', lantern = false, subtitle }: Props) {
-  // 端末幅に追従（iPhone SE/mini の狭幅でもはみ出さない）
-  const fontSize = size === 'lg' ? 'clamp(2.8rem, 15vw, 4.6rem)' : 'clamp(2rem, 11vw, 2.6rem)';
+  // 端末幅に追従（狭幅でもはみ出さず、広幅でも大きくなりすぎない上限）
+  const fontSize = size === 'lg' ? 'clamp(2.6rem, 13vw, 3.9rem)' : 'clamp(2rem, 10vw, 2.5rem)';
+  // 中央寄せと縦の間隔は @layer の margin に依存せずインラインの flex で確実に効かせる
   return (
-    <div className="text-center">
-      {lantern && <div className="lantern" />}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {lantern && <div className="lantern" style={{ margin: '0 0 0.4rem' }} />}
       <div className="logo-3d" style={{ fontSize }}>Drunk</div>
-      {subtitle && <div style={{ marginTop: '1.1rem' }}><span className="logo-sub">{subtitle}</span></div>}
+      {subtitle && <div style={{ marginTop: '1.25rem' }}><span className="logo-sub">{subtitle}</span></div>}
     </div>
   );
 }

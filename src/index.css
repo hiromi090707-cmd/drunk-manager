@@ -36,6 +36,9 @@
   --font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
 }
 
+/* リセット類は @layer base に入れる。レイヤー外に置くと @layer components や mt-/mb- などの
+   ユーティリティの margin/padding を打ち消してしまい、セクション間隔や中央寄せが崩れる。 */
+@layer base {
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
@@ -76,6 +79,7 @@ body::before {
   width: 100%;
   position: relative;
   overflow: hidden;
+}
 }
 
 @layer components {
@@ -197,14 +201,13 @@ body::before {
   .logo-3d {
     font-family: var(--font-display);
     color: #ffcf5e;
-    line-height: 1.04;
-    padding-bottom: 0.12em;
-    -webkit-text-stroke: 3px var(--outline);
+    line-height: 1.1;
+    -webkit-text-stroke: 2px var(--outline);
     text-shadow:
-      0 3px 0 #b9460f, 0 5px 0 var(--depth),
-      0 7px 0 #7a1f0a, 0 10px 16px rgba(0, 0, 0, 0.55),
-      0 0 26px rgba(255, 180, 61, 0.42);
-    transform: rotate(-2deg);
+      0 2px 0 #b9460f, 0 4px 0 var(--depth),
+      0 6px 0 #7a1f0a, 0 8px 12px rgba(0, 0, 0, 0.5),
+      0 0 22px rgba(255, 180, 61, 0.4);
+    transform: rotate(-1deg);
   }
   .logo-sub {
     display: inline-block;
