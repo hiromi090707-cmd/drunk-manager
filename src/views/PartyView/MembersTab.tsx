@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
 import type { Member, PartyState } from '../../types';
 import { DRINK_TYPES } from '../../constants';
-import { emptyDrinks } from '../../lib/party';
+import { emptyDrinks, zeroMember } from '../../lib/party';
 import { megaTotal } from '../../lib/alcohol';
 import { updateMemberDrinks } from '../../lib/db';
+import { useRoster } from '../../hooks/useRoster';
 
 interface Props {
   partyState: PartyState;
@@ -13,6 +14,18 @@ interface Props {
 export function MembersTab({ partyState, onUpdate }: Props) {
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [megaMode, setMegaMode] = useState(false);
+  const { addMember } = useRoster();
+  const [adding, setAdding] = useState(false);
+  const [newName, setNewName] = useState('');
+
+  async function handleAddMember() {
+    const name = newName.trim();
+    if (!name) return;
+    setNewName('');
+    setAdding(false);
+    const added = await addMember(name, partyState.id);
+    if (added) onUpdate({ ...partyState, members: [...partyState.members, zeroMember(added)] });
+  }
 
   function updateDrink(mId: string, type: string, delta: 1 | -1, target: 'regular' | 'mega') {
     let changed: Member | undefined;
@@ -122,6 +135,33 @@ export function MembersTab({ partyState, onUpdate }: Props) {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-4">
+        {adding ? (
+          <div className="flex" style={{ gap: '0.5rem' }}>
+            <input
+              className="input-field"
+              style={{ flex: 1, minWidth: 0 }}
+              placeholder="名前を入力"
+              value={newName}
+              autoFocus
+              maxLength={20}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAddMember(); }}
+            />
+            <button onClick={handleAddMember} className="btn btn-primary btn-sm">追加</button>
+            <button onClick={() => { setAdding(false); setNewName(''); }} className="btn btn-sm btn-ghost text-muted">取消</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className="btn btn-sm w-full"
+            style={{ fontFamily: 'var(--font-pop)', color: 'var(--accent-color)', background: 'transparent', border: '2px dashed var(--border-color)', boxShadow: 'none' }}
+          >
+            ＋メンバーを追加
+          </button>
+        )}
       </div>
     </div>
   );
