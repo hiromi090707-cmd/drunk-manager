@@ -252,6 +252,20 @@ body::before {
   .sec-divider span { font-family: var(--font-pop); font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 0.12em; white-space: nowrap; }
   .sec-divider .sec-line { flex: 1; height: 2px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--border-strong) 0 6px, transparent 6px 10px); }
 
+  /* 飲み会中のタブ（メンバー/割り勘/要約）：上部の金ピルタブ */
+  .party-tabs { display: flex; gap: 7px; margin: 0.25rem 0 1rem; }
+  .party-tabs button {
+    flex: 1; border: 2px solid var(--depth-dark);
+    background: linear-gradient(180deg, var(--bg-surface-2), var(--bg-surface));
+    color: var(--text-secondary); font-family: var(--font-pop); font-size: 0.82rem;
+    padding: 0.7rem 0.25rem; border-radius: 13px; cursor: pointer;
+    box-shadow: 0 4px 0 var(--depth-dark);
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    &:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--depth-dark); }
+  }
+  .party-tabs button.on { background: var(--accent-gradient); color: #3a1402; border-color: var(--outline); box-shadow: 0 4px 0 var(--depth); }
+
   /* メンバー席（カウンターの一席）。※ユーザー↔メンバー紐付けが無いため "you" 強調はしない */
   .seat {
     border-radius: 18px; padding: 0.9rem; border: 2px solid var(--border-color);

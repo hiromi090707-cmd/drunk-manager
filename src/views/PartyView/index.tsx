@@ -64,14 +64,13 @@ export function PartyView() {
   }
 
   const tabs = [
-    { id: 'members' as const, label: 'メンバー', icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-    { id: 'split' as const, label: '割り勘', icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
-    { id: 'summary' as const, label: '要約', icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style={{ width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+    { id: 'members' as const, label: '🍻 メンバー' },
+    { id: 'split' as const, label: '💰 割り勘' },
+    { id: 'summary' as const, label: '✨ 要約' },
   ];
 
   return (
-    <>
-      <div className="view" style={{ paddingBottom: 0 }}>
+      <div className="view">
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
           <div style={{ flex: 1 }}>
             <button
@@ -114,30 +113,23 @@ export function PartyView() {
           />
         </div>
 
+        <div className="party-tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => dispatch({ type: 'SET_PARTY_TAB', tab: tab.id })}
+              className={activePartyTab === tab.id ? 'on' : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {activePartyTab === 'members' && <MembersTab partyState={partyState} onUpdate={updatePartyState} />}
           {activePartyTab === 'split' && <SplitTab partyState={partyState} onUpdate={updatePartyState} />}
           {activePartyTab === 'summary' && <SummaryTab partyState={partyState} onUpdate={updatePartyState} />}
         </div>
       </div>
-
-      <nav className="bottom-nav">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => dispatch({ type: 'SET_PARTY_TAB', tab: tab.id })}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center',
-              color: activePartyTab === tab.id ? 'var(--accent-color)' : 'var(--text-secondary)',
-              fontSize: '0.75rem', fontWeight: 500, gap: '0.25rem',
-              cursor: 'pointer', background: 'none', border: 'none', transition: 'color 0.2s',
-            }}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-    </>
   );
 }

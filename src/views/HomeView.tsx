@@ -120,22 +120,30 @@ export function HomeView() {
 
       <div className="sec-divider"><span>この席のあなた</span><div className="sec-line" /></div>
       <div className="glass p-3" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {user?.photoURL && <img src={user.photoURL} style={{ width: 28, height: 28, borderRadius: '50%' }} />}
-          <span className="text-muted" style={{ fontSize: '0.8rem' }}>{user?.displayName ?? ''}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10, overflow: 'hidden',
+            border: '2px solid var(--outline)', background: 'var(--accent-gradient)',
+            display: 'grid', placeItems: 'center', fontFamily: 'var(--font-display)', color: '#3a1402', fontSize: '1rem',
+          }}>
+            {user?.photoURL
+              ? <img src={user.photoURL} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : (user?.displayName ?? '?').charAt(0)}
+          </div>
+          <span className="text-muted" style={{ fontSize: '0.85rem', fontWeight: 700 }}>{user?.displayName ?? ''}</span>
         </div>
         <button
           onClick={handleLogout}
           className="btn btn-sm"
-          style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'transparent', border: '1px solid var(--border-color)' }}
+          style={{ fontFamily: 'var(--font-pop)', fontSize: '0.74rem', padding: '0.4rem 0.85rem', background: 'transparent', boxShadow: 'none' }}
         >
           ログアウト
         </button>
       </div>
 
       {state.groupInfo?.inviteCode && (
-        <div className="glass p-3 mt-4">
-          <p className="text-muted" style={{ fontSize: '0.7rem', marginBottom: '0.2rem' }}>招待コード</p>
+        <div className="mt-4" style={{ border: '2px dashed var(--border-strong)', borderRadius: 16, padding: '14px 16px', background: 'rgba(255, 180, 61, 0.05)' }}>
+          <p style={{ fontFamily: 'var(--font-pop)', color: 'var(--text-faint)', fontSize: '0.66rem', letterSpacing: '0.16em', marginBottom: '0.3rem' }}>招待コード</p>
           {editingCode ? (
             <div className="flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
               <input
@@ -152,13 +160,13 @@ export function HomeView() {
             </div>
           ) : (
             <div className="flex justify-between items-center">
-              <span className="text-accent" style={{ letterSpacing: '0.2rem', fontWeight: 'bold' }}>
+              <span style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-color)', letterSpacing: '0.16em', fontSize: '1.2rem', WebkitTextStroke: '1px var(--outline)' }}>
                 {state.groupInfo.inviteCode}
               </span>
               <button
                 onClick={() => { setCodeInput(state.groupInfo!.inviteCode); setEditingCode(true); }}
-                className="btn btn-sm btn-ghost text-muted"
-                style={{ fontSize: '0.75rem' }}
+                className="btn btn-sm"
+                style={{ fontFamily: 'var(--font-pop)', fontSize: '0.72rem', padding: '0.4rem 0.85rem', background: 'transparent', boxShadow: 'none', color: 'var(--accent-color)' }}
               >
                 変更
               </button>
@@ -167,7 +175,7 @@ export function HomeView() {
           <button
             onClick={handleLeaveGroup}
             className="btn btn-sm mt-3 w-full"
-            style={{ fontSize: '0.8rem', color: 'var(--danger-color)', background: 'transparent', border: '1px solid var(--danger-color)' }}
+            style={{ fontSize: '0.8rem', fontFamily: 'var(--font-pop)', color: 'var(--danger-color)', background: 'transparent', border: '2px solid var(--danger-color)', boxShadow: 'none' }}
           >
             このグループを退出する
           </button>
