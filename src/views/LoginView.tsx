@@ -1,22 +1,11 @@
 import { loginWithGoogle } from '../lib/auth';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function LoginView() {
   return (
     <div className="view" style={{ justifyContent: 'center', alignItems: 'center' }}>
-      <div className="text-center mb-4">
-        <h1 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '5rem',
-          background: 'var(--accent-gradient)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          lineHeight: 1,
-          filter: 'drop-shadow(0 0 24px rgba(232, 137, 10, 0.35))',
-          marginBottom: '0.4rem',
-        }}>
-          Drunk
-        </h1>
-        <p className="text-muted" style={{ fontSize: '0.8rem', letterSpacing: '0.2em' }}>飲 み 会 マ ネ ー ジ ャ ー</p>
+      <div className="mb-4">
+        <BrandLogo size="lg" lantern subtitle="のみかい マネージャー" />
       </div>
 
       <div className="glass text-center p-4" style={{ width: '100%', maxWidth: 320 }}>

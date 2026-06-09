@@ -12,7 +12,14 @@ export function StatMetric({ label, value, accent, caption, size = 'lg' }: Props
   return (
     <div className="text-center">
       <div className="text-muted" style={{ fontSize: '0.8rem' }}>{label}</div>
-      <div className={accent ? 'text-accent' : undefined} style={{ fontSize: size === 'lg' ? '2rem' : '1.5rem', fontWeight: 'bold' }}>
+      <div
+        style={{
+          fontSize: size === 'lg' ? '2rem' : '1.5rem',
+          fontFamily: 'var(--font-display)',
+          color: accent ? '#ffcf5e' : 'var(--text-primary)',
+          WebkitTextStroke: accent ? '1.5px var(--outline)' : undefined,
+        }}
+      >
         {value}
       </div>
       {caption && <div className="text-muted" style={{ marginTop: '0.25rem', fontSize: '0.9rem' }}>{caption}</div>}

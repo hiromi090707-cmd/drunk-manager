@@ -4,6 +4,7 @@ import { createGroup, joinGroupByCode, listenToParties } from '../lib/db';
 import { logout } from '../lib/auth';
 import { auth } from '../firebase';
 import { FIXED_MEMBERS } from '../constants';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function GroupSetupView() {
   const { dispatch } = useApp();
@@ -45,9 +46,8 @@ export function GroupSetupView() {
   return (
     <div className="view" style={{ justifyContent: 'center', alignItems: 'center' }}>
       <div className="text-center mb-4">
-        <h1 style={{ fontSize: '2rem', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          グループ設定
-        </h1>
+        <BrandLogo size="md" />
+        <h1 style={{ fontSize: '1.4rem', marginTop: '0.8rem' }}>グループ設定</h1>
         <p className="text-muted">グループを作成するか、招待コードで参加してください</p>
       </div>
 

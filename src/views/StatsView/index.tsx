@@ -39,15 +39,16 @@ export function StatsView() {
         <div style={{ width: 50 }} />
       </div>
 
-      <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '0.2rem', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: 13, padding: '0.2rem', marginBottom: '1rem', border: '2px solid var(--border-color)' }}>
         {STAT_TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => dispatch({ type: 'SET_STATS_TAB', tab: tab.id })}
             style={{
-              flex: 1, border: 'none', borderRadius: 6, padding: '0.4rem',
-              background: activeStatsTab === tab.id ? 'var(--bg-surface)' : 'transparent',
-              color: activeStatsTab === tab.id ? '#fff' : 'var(--text-secondary)',
+              flex: 1, border: 'none', borderRadius: 9, padding: '0.4rem',
+              fontFamily: 'var(--font-pop)',
+              background: activeStatsTab === tab.id ? 'var(--accent-gradient)' : 'transparent',
+              color: activeStatsTab === tab.id ? '#3a1402' : 'var(--text-secondary)',
               cursor: 'pointer',
             }}
           >
