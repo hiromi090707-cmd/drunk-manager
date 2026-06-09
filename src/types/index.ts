@@ -28,12 +28,18 @@ export interface Party {
   updatedAt?: unknown;
 }
 
+export interface GroupMember {
+  id: string;
+  name: string;
+  removed?: boolean;
+}
+
 export interface Group {
   id: string;
   name: string;
   memberUids: string[];
   memberEmails: string[];
-  members: { id: string; name: string }[];
+  members: GroupMember[];
   inviteCode: string;
   claudeApiKey?: string;
   geminiApiKey?: string;
