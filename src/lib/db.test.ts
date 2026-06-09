@@ -26,9 +26,11 @@ import {
   listenToParties,
   saveParty,
   setActiveGroup,
+  updateGroupMembers,
   updateInviteCode,
   updateMemberDrinks,
 } from './db';
+import { zeroMember } from './party';
 import { auth } from '../firebase';
 import type { Member, Party } from '../types';
 
@@ -299,6 +301,85 @@ describe('パーティの保存・取得', () => {
       expect(Array.isArray(data.members)).toBe(false);
       expect(data.members.m1.totalDrinks).toBe(2);
     });
+  });
+});
+
+describe('名簿（members）の編集', () => {
+  it('updateGroupMembers が members 配列を更新する', async () => {
+    await signInAs(USER_A);
+    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST01');
+    const gid = getActiveGroup()!;
+    await updateGroupMembers([...TEST_MEMBERS, { id: 'm_new', name: '新メンバー' }]);
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().collection('groups').doc(gid).get();
+      expect(snap.data()?.members).toHaveLength(3);
+    });
+  });
+
+  it('removed フラグでソフト削除を保存できる', async () => {
+    await signInAs(USER_A);
+    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST02');
+    const gid = getActiveGroup()!;
+    await updateGroupMembers([
+      { id: 'm1', name: 'メンバー1', removed: true },
+      { id: 'm2', name: 'メンバー2' },
+    ]);
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().collection('groups').doc(gid).get();
+      const members = snap.data()?.members as Array<{ id: string; removed?: boolean }>;
+      expect(members.find((m) => m.id === 'm1')?.removed).toBe(true);
+    });
+  });
+
+  it('進行中パーティへ updateMemberDrinks で新メンバーを追加できる（カスケード）', async () => {
+    await signInAs(USER_A);
+    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'CASC01');
+    const gid = getActiveGroup()!;
+    const partyId = await createParty({
+      areaName: '', storeName: '', startTime: new Date().toISOString(),
+      members: [zeroMember({ id: 'm1', name: 'メンバー1' })], totalAmount: 0, splitRoles: {},
+    });
+    await updateMemberDrinks(partyId, zeroMember({ id: 'm_new', name: '途中参加' }));
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const snap = await ctx.firestore().doc(`groups/${gid}/parties/${partyId}`).get();
+      const data = snap.data()!;
+      expect(data.members.m1).toBeTruthy();
+      expect(data.members.m_new.name).toBe('途中参加');
+    });
+  });
+
+  it('ルール: メンバーは members だけの変更を許可される', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST03');
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertSucceeds(
+      aCtx.firestore().collection('groups').doc(group.id).update({
+        members: [...TEST_MEMBERS, { id: 'm_x', name: 'X' }],
+      }),
+    );
+  });
+
+  it('ルール: members と他キーの同時変更は拒否される', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST04');
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertFails(
+      aCtx.firestore().collection('groups').doc(group.id).update({
+        members: [{ id: 'm1', name: 'x' }],
+        name: '別名',
+      }),
+    );
+  });
+
+  it('ルール: 非メンバー（未参加）は members を変更できない', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST05');
+    const bCtx = testEnv.authenticatedContext(USER_B.uid, { email: USER_B.email });
+    await assertFails(
+      bCtx.firestore().collection('groups').doc(group.id).update({
+        members: [{ id: 'm1', name: 'x' }],
+      }),
+    );
   });
 });
 
