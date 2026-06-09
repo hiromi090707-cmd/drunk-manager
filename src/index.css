@@ -197,7 +197,8 @@ body::before {
   .logo-3d {
     font-family: var(--font-display);
     color: #ffcf5e;
-    line-height: 0.9;
+    line-height: 1.04;
+    padding-bottom: 0.12em;
     -webkit-text-stroke: 3px var(--outline);
     text-shadow:
       0 3px 0 #b9460f, 0 5px 0 var(--depth),

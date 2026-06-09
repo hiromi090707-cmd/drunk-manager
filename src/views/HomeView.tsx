@@ -91,7 +91,7 @@ export function HomeView() {
 
       <div className="mt-6">
         {activeParty && (
-          <div className="text-center" style={{ marginBottom: '0.6rem' }}>
+          <div className="text-center" style={{ marginBottom: '0.9rem' }}>
             <span className="sticker"><span className="sticker-dot" />進行中の飲み会があります</span>
           </div>
         )}
