@@ -248,7 +248,7 @@ body::before {
   .sync-badge .sticker-dot { background: var(--success-color); box-shadow: 0 0 0 3px rgba(57, 210, 122, 0.18); }
 
   /* セクション見出し（点線の暖簾） */
-  .sec-divider { display: flex; align-items: center; gap: 0.7rem; margin: 1.6rem 0.2rem 0.8rem; }
+  .sec-divider { display: flex; align-items: center; gap: 0.7rem; margin: 2.2rem 0.2rem 1rem; }
   .sec-divider span { font-family: var(--font-pop); font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 0.12em; white-space: nowrap; }
   .sec-divider .sec-line { flex: 1; height: 2px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--border-strong) 0 6px, transparent 6px 10px); }
 

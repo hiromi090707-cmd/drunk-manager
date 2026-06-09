@@ -85,11 +85,11 @@ export function HomeView() {
   return (
     <div className="view" id="view-home">
       {showOnboarding && <OnboardingOverlay onClose={handleCloseOnboarding} />}
-      <div className="mt-4 mb-4">
+      <div className="mt-8 mb-6">
         <BrandLogo size="lg" lantern subtitle="のみかい マネージャー" />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-8">
         {activeParty && (
           <div className="text-center" style={{ marginBottom: '0.9rem' }}>
             <span className="sticker"><span className="sticker-dot" />進行中の飲み会があります</span>
@@ -118,6 +118,7 @@ export function HomeView() {
         <span className="btn-3d-ic">📊</span>
       </button>
 
+      <div style={{ marginTop: 'auto' }}>
       <div className="sec-divider"><span>この席のあなた</span><div className="sec-line" /></div>
       <div className="glass p-3" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -181,6 +182,7 @@ export function HomeView() {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }
