@@ -82,9 +82,14 @@ export function PartyView() {
               保存
             </button>
           </div>
-          <h2 style={{ flex: 2, textAlign: 'center', margin: 0, fontSize: '1.1rem' }}>
-            {isEditing ? '履歴を編集' : '飲み会中'}
-          </h2>
+          <div style={{ flex: 2, textAlign: 'center' }}>
+            <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{isEditing ? '履歴を編集' : '飲み会中'}</h2>
+            {!isEditing && partyState.id && (
+              <span className="sync-badge" style={{ marginTop: '0.15rem' }}>
+                <span className="sticker-dot" />リアルタイム同期
+              </span>
+            )}
+          </div>
           <div style={{ flex: 1 }}>
             <button onClick={handleCancel} className="btn btn-sm" style={{ width: '100%' }}>戻る</button>
           </div>

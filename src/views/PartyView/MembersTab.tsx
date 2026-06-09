@@ -70,10 +70,12 @@ export function MembersTab({ partyState, onUpdate }: Props) {
           className="btn btn-sm"
           style={{
             fontSize: '0.8rem',
-            fontWeight: 700,
+            fontFamily: 'var(--font-pop)',
+            borderRadius: 999,
             color: megaMode ? '#fff' : 'var(--text-secondary)',
             background: megaMode ? 'var(--danger-color)' : 'transparent',
-            border: `1px solid ${megaMode ? 'var(--danger-color)' : 'var(--border-color)'}`,
+            border: `2px solid ${megaMode ? 'var(--danger-color)' : 'var(--border-color)'}`,
+            boxShadow: megaMode ? '0 3px 0 #6e1306, 0 0 16px rgba(214,63,30,0.5)' : '0 3px 0 rgba(0,0,0,0.3)',
           }}
         >
           メガ入力 {megaMode ? 'ON' : 'OFF'}
@@ -81,10 +83,10 @@ export function MembersTab({ partyState, onUpdate }: Props) {
       </div>
       <div className="flex flex-col gap-3">
         {partyState.members.map((member) => (
-          <div key={member.id} className="glass p-3">
-            <div className="flex justify-between items-center mb-3" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+          <div key={member.id} className="seat">
+            <div className="flex justify-between items-center mb-3" style={{ borderBottom: '2px dotted var(--border-color)', paddingBottom: '0.5rem' }}>
               <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>{member.name}</span>
-              <span className="text-accent" style={{ fontWeight: 700 }}>
+              <span className="text-accent" style={{ fontFamily: 'var(--font-pop)' }}>
                 計 {member.totalDrinks} 杯{megaTotal(member) > 0 ? ` / メガ ${megaTotal(member)}` : ''}
               </span>
             </div>
@@ -99,8 +101,10 @@ export function MembersTab({ partyState, onUpdate }: Props) {
                       padding: '0.5rem',
                       flexDirection: 'column',
                       gap: '0.2rem',
+                      borderRadius: 14,
                       background: count > 0 ? 'var(--bg-surface)' : 'transparent',
                       borderColor: megaMode ? 'var(--danger-color)' : (count > 0 ? 'var(--accent-color)' : 'var(--border-color)'),
+                      boxShadow: count > 0 ? '0 4px 0 var(--outline)' : '0 4px 0 rgba(0,0,0,0.3)',
                     }}
                     onMouseDown={() => handlePressStart(member.id, drink.id)}
                     onMouseUp={() => handlePressEnd(member.id, drink.id)}
@@ -111,7 +115,7 @@ export function MembersTab({ partyState, onUpdate }: Props) {
                   >
                     <span style={{ fontSize: '1.5rem', pointerEvents: 'none' }}>{drink.emoji}</span>
                     <span className="text-muted" style={{ fontSize: '0.65rem', pointerEvents: 'none', lineHeight: 1 }}>{drink.name}</span>
-                    <span style={{ fontWeight: 700, color: count > 0 ? 'var(--text-primary)' : 'var(--text-secondary)', pointerEvents: 'none', fontSize: '1.1rem' }}>{count}</span>
+                    <span style={{ fontFamily: 'var(--font-display)', color: count > 0 ? '#ffcf5e' : 'var(--text-faint)', pointerEvents: 'none', fontSize: '1.1rem' }}>{count}</span>
                   </button>
                 );
               })}
