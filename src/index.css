@@ -1,18 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --bg-color: #120c08;
-  --bg-surface: #1f140d;
-  --bg-surface-glass: rgba(31, 20, 13, 0.88);
-  --text-primary: #f2e4cc;
-  --text-secondary: #8a7355;
-  --accent-color: #e8890a;
-  --accent-gradient: linear-gradient(135deg, #e8890a 0%, #d63f1e 100%);
+  /* ── 地・面 ── */
+  --bg-color: #0c0805;
+  --bg-1: #180e07;
+  --bg-surface: #20130a;
+  --bg-surface-2: #2c1a0d;
+  --bg-surface-glass: rgba(32, 19, 10, 0.82);
+
+  /* ── 文字 ── */
+  --text-primary: #fbedd2;
+  --text-secondary: #b89a72;
+  --text-faint: #8a6e4d;
+
+  /* ── アクセント（提灯の灯り〜炭火） ── */
+  --accent-color: #f0961a;
+  --accent-bright: #ffb43d;
+  --accent-gradient: linear-gradient(180deg, #ffd368 0%, #ffb43d 45%, #f0961a 100%);
   --danger-color: #d63f1e;
-  --success-color: #2f9e5a;
-  --border-color: rgba(232, 137, 10, 0.2);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.55);
+  --success-color: #39d27a;
+  --seal-color: #e23b22;
+
+  /* ── 立体（ゲームUI）：縁取り・厚みの影色 ── */
+  --outline: #6e2a06;
+  --depth: #9c2a10;
+  --depth-dark: #0c0805;
+
+  --border-color: rgba(255, 180, 61, 0.22);
+  --border-strong: rgba(255, 180, 61, 0.45);
+  --shadow-glass: 0 8px 0 rgba(0, 0, 0, 0.32), 0 14px 28px 0 rgba(0, 0, 0, 0.45);
+
   --font-display: 'Dela Gothic One', cursive;
+  --font-pop: 'RocknRoll One', 'M PLUS Rounded 1c', sans-serif;
+  --font-retro: 'Reggae One', 'M PLUS Rounded 1c', cursive;
   --font-family: 'M PLUS Rounded 1c', -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
 }
 
@@ -21,8 +41,10 @@
 body {
   background-color: var(--bg-color);
   background-image:
-    radial-gradient(ellipse 90% 40% at 50% 0%, rgba(232, 137, 10, 0.07) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 30% at 90% 100%, rgba(214, 63, 30, 0.05) 0%, transparent 70%);
+    radial-gradient(120% 48% at 50% -6%, rgba(255, 180, 61, 0.16) 0%, rgba(214, 63, 30, 0.05) 40%, transparent 64%),
+    radial-gradient(80% 36% at 95% 102%, rgba(214, 63, 30, 0.08) 0%, transparent 60%),
+    repeating-linear-gradient(91deg, transparent 0 17px, rgba(90, 46, 18, 0.14) 18px 19px),
+    linear-gradient(180deg, var(--bg-1), var(--bg-color) 62%);
   color: var(--text-primary);
   font-family: var(--font-family);
   line-height: 1.5;
@@ -32,6 +54,17 @@ body {
   flex-direction: column;
   overflow-x: hidden;
   width: 100%;
+}
+
+/* スキャンライン＋ビネット（アーケード感）。操作を妨げないオーバーレイ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 4px);
+  box-shadow: inset 0 0 140px 30px rgba(0, 0, 0, 0.5);
 }
 
 #root {
@@ -46,12 +79,13 @@ body {
 }
 
 @layer components {
+  /* パネル（昔の .glass を立体カードへ） */
   .glass {
     background: var(--bg-surface-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 2px solid var(--border-color);
+    border-radius: 18px;
     box-shadow: var(--shadow-glass);
   }
 
@@ -64,55 +98,85 @@ body {
     animation: fadeIn 0.3s ease-out;
   }
 
+  /* 通常ボタン（暗トーンの立体小ボタン） */
   .btn {
-    background: var(--bg-surface);
+    background: linear-gradient(180deg, var(--bg-surface-2), var(--bg-surface));
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    padding: 0.7rem 1.4rem;
+    border-radius: 13px;
     font-size: 1rem;
     font-weight: 700;
     font-family: var(--font-family);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     min-height: 44px;
     touch-action: manipulation;
-    &:active { transform: scale(0.95); opacity: 0.85; }
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+    &:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); opacity: 0.95; }
   }
 
+  /* 主CTA：金の立体ボタン（btn-primary を使う全画面が自動で派手に） */
   .btn-primary {
     background: var(--accent-gradient);
-    border: none;
-    color: #fff;
-    box-shadow: 0 4px 20px rgba(232, 137, 10, 0.3);
-    &:active { box-shadow: 0 2px 8px rgba(232, 137, 10, 0.2); }
+    border: 2px solid var(--outline);
+    color: #3a1402;
+    box-shadow: 0 6px 0 var(--depth), 0 11px 20px rgba(0, 0, 0, 0.4);
+    &:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--depth), 0 5px 10px rgba(0, 0, 0, 0.4); opacity: 1; }
   }
 
-  .btn-sm {
-    padding: 0.4rem 0.75rem;
-    font-size: 0.85rem;
+  /* 汎用の大きな立体ボタン（ヒーローCTA用） */
+  .btn-3d {
+    width: 100%;
+    text-align: left;
+    border: 3px solid var(--outline);
+    border-radius: 18px;
+    padding: 1.1rem 1.1rem 1rem;
+    color: #3a1402;
+    background: var(--accent-gradient);
+    box-shadow: 0 7px 0 var(--depth), 0 12px 18px rgba(0, 0, 0, 0.45);
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    &:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--depth), 0 5px 10px rgba(0, 0, 0, 0.4); }
   }
+  .btn-3d-dark {
+    background: linear-gradient(180deg, var(--bg-surface-2), var(--bg-surface));
+    border-color: var(--depth-dark);
+    color: var(--text-primary);
+    box-shadow: 0 6px 0 var(--depth-dark), 0 10px 16px rgba(0, 0, 0, 0.4);
+    &:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--depth-dark), 0 5px 10px rgba(0, 0, 0, 0.35); }
+  }
+  .btn-3d .btn-3d-title { font-family: var(--font-display); font-size: 1.25rem; letter-spacing: 0.01em; line-height: 1.15; }
+  .btn-3d .btn-3d-sub { font-weight: 700; font-size: 0.72rem; margin-top: 0.3rem; color: #6e2a06; }
+  .btn-3d-dark .btn-3d-sub { color: var(--text-faint); }
+  .btn-3d .btn-3d-ic { font-size: 2rem; flex: none; }
 
-  .btn-ghost { border: none; background: transparent; }
-  .btn-dashed { border: 1px dashed var(--border-color); background: transparent; }
-  .btn-dashed-danger { border: 1px dashed var(--danger-color); background: transparent; color: var(--danger-color); }
+  .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3); &:active { box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); } }
+  .btn-ghost { border: none; background: transparent; box-shadow: none; &:active { box-shadow: none; } }
+  .btn-dashed { border: 2px dashed var(--border-color); background: transparent; box-shadow: none; &:active { box-shadow: none; } }
+  .btn-dashed-danger { border: 2px dashed var(--danger-color); background: transparent; color: var(--danger-color); box-shadow: none; &:active { box-shadow: none; } }
 
   .text-muted { color: var(--text-secondary); }
   .text-accent { color: var(--accent-color); }
 
   .input-field {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.22);
+    border: 2px solid var(--border-color);
     color: var(--text-primary);
     padding: 0.75rem;
     border-radius: 12px;
     font-family: var(--font-family);
     font-size: 1rem;
-    &:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(232, 137, 10, 0.15); }
+    &:focus { outline: none; border-color: var(--accent-bright); box-shadow: 0 0 0 3px rgba(255, 180, 61, 0.18); }
   }
 
   .bottom-nav {
@@ -120,13 +184,78 @@ body {
     justify-content: space-around;
     padding: 0.75rem 0.5rem;
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
-    background: var(--bg-surface-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border-color);
+    background: rgba(12, 8, 5, 0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 2px solid var(--border-color);
     position: sticky;
     bottom: 0;
     z-index: 100;
+  }
+
+  /* ── ブランド：Drunk 立体ロゴ ── */
+  .logo-3d {
+    font-family: var(--font-display);
+    color: #ffcf5e;
+    line-height: 0.9;
+    -webkit-text-stroke: 3px var(--outline);
+    text-shadow:
+      0 3px 0 #b9460f, 0 5px 0 var(--depth),
+      0 7px 0 #7a1f0a, 0 10px 16px rgba(0, 0, 0, 0.55),
+      0 0 26px rgba(255, 180, 61, 0.42);
+    transform: rotate(-2deg);
+  }
+  .logo-sub {
+    display: inline-block;
+    font-family: var(--font-pop);
+    font-size: 0.7rem;
+    letter-spacing: 0.32em;
+    color: #3a1402;
+    background: var(--accent-gradient);
+    padding: 0.25rem 1rem;
+    border-radius: 999px;
+    border: 2px solid var(--outline);
+    box-shadow: 0 3px 0 var(--outline);
+  }
+
+  /* 提灯 */
+  .lantern {
+    width: 66px; height: 82px; margin: 0 auto 0.4rem; position: relative; border-radius: 50% / 42%;
+    background: radial-gradient(60% 50% at 50% 45%, rgba(255, 214, 120, 0.95), rgba(240, 150, 26, 0.9) 55%, #b9460f 100%);
+    box-shadow: 0 0 46px 7px rgba(255, 180, 61, 0.5), inset 0 -7px 22px rgba(120, 30, 0, 0.6);
+    animation: flicker 4s ease-in-out infinite;
+  }
+  .lantern::after {
+    content: "呑"; position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: var(--font-retro); font-size: 2rem; color: #7a1606;
+  }
+
+  /* 進行中ステッカー */
+  .sticker {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: var(--font-pop); font-size: 0.72rem; color: #06371b;
+    background: var(--success-color); padding: 0.35rem 0.7rem; border-radius: 10px;
+    border: 2px solid #064d27; box-shadow: 0 3px 0 #064d27;
+  }
+  .sticker-dot { width: 7px; height: 7px; border-radius: 50%; background: #06371b; animation: pulse 1.3s infinite; }
+
+  /* リアルタイム同期バッジ（プレゼンス件数は出さない＝事実整合） */
+  .sync-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.7rem; font-weight: 700; color: var(--success-color);
+  }
+  .sync-badge .sticker-dot { background: var(--success-color); box-shadow: 0 0 0 3px rgba(57, 210, 122, 0.18); }
+
+  /* セクション見出し（点線の暖簾） */
+  .sec-divider { display: flex; align-items: center; gap: 0.7rem; margin: 1.6rem 0.2rem 0.8rem; }
+  .sec-divider span { font-family: var(--font-pop); font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 0.12em; white-space: nowrap; }
+  .sec-divider .sec-line { flex: 1; height: 2px; border-radius: 2px; background: repeating-linear-gradient(90deg, var(--border-strong) 0 6px, transparent 6px 10px); }
+
+  /* メンバー席（カウンターの一席）。※ユーザー↔メンバー紐付けが無いため "you" 強調はしない */
+  .seat {
+    border-radius: 18px; padding: 0.9rem; border: 2px solid var(--border-color);
+    background: linear-gradient(180deg, var(--bg-surface-2), var(--bg-surface));
+    box-shadow: 0 7px 0 rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -134,3 +263,8 @@ body {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes flicker {
+  0%, 100% { box-shadow: 0 0 46px 7px rgba(255, 180, 61, 0.5), inset 0 -7px 22px rgba(120, 30, 0, 0.6); }
+  50% { box-shadow: 0 0 58px 11px rgba(255, 180, 61, 0.7), inset 0 -7px 22px rgba(120, 30, 0, 0.6); }
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
