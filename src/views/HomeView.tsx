@@ -32,6 +32,11 @@ export function HomeView() {
   }
 
   async function handleNewParty() {
+    if (rosterOf(state.groupInfo).length === 0) {
+      alert('まずメンバーを追加してください。');
+      dispatch({ type: 'SET_VIEW', view: 'memberManage' });
+      return;
+    }
     const active = findActiveParty(state.historyData);
     if (active) {
       // 進行中の飲み会にそのまま参加（新規作成しない＝乱立防止）
@@ -172,6 +177,13 @@ export function HomeView() {
               </button>
             </div>
           )}
+          <button
+            onClick={() => dispatch({ type: 'SET_VIEW', view: 'memberManage' })}
+            className="btn btn-sm mt-3 w-full"
+            style={{ fontSize: '0.8rem', fontFamily: 'var(--font-pop)', color: 'var(--accent-color)', background: 'transparent', border: '2px solid var(--accent-color)', boxShadow: 'none' }}
+          >
+            メンバーを編集
+          </button>
           <button
             onClick={handleLeaveGroup}
             className="btn btn-sm mt-3 w-full"

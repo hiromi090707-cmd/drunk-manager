@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { membersToArray, membersToMap, mergeMembers, findActiveParty } from './party';
-import type { Member, Party } from '../types';
+import { membersToArray, membersToMap, mergeMembers, findActiveParty, rosterOf, zeroMember } from './party';
+import type { Group, Member, Party } from '../types';
 
 const mkMember = (id: string): Member => ({
   id, name: id.toUpperCase(),
@@ -79,10 +79,39 @@ describe('mergeMembers', () => {
     expect(changed).toBe(false);
   });
 
-  it('incoming にしか無いメンバーは取り込まない（固定ロスター前提）', () => {
+  it('incoming にしか無いメンバーも取り込む（途中参加に対応）', () => {
     const current = [m('x', 1)];
     const incoming = [m('x', 1), m('z', 9)];
-    const { merged } = mergeMembers(current, incoming);
-    expect(merged.map((p) => p.id)).toEqual(['x']);
+    const { merged, changed } = mergeMembers(current, incoming);
+    expect(merged.map((p) => p.id)).toEqual(['x', 'z']);
+    expect(changed).toBe(true);
+  });
+});
+
+describe('rosterOf', () => {
+  const mkGroup = (members: Group['members']): Group => ({
+    id: 'g', name: '', memberUids: [], memberEmails: [], members, inviteCode: '',
+  });
+
+  it('group が null のときは FIXED_MEMBERS にフォールバックする', () => {
+    expect(rosterOf(null).length).toBeGreaterThan(0);
+  });
+
+  it('group があれば名簿が空でも空ロスターを返す（FIXED_MEMBERS に戻さない）', () => {
+    expect(rosterOf(mkGroup([]))).toEqual([]);
+  });
+
+  it('removed のメンバーを除外する', () => {
+    const g = mkGroup([{ id: 'a', name: 'A' }, { id: 'b', name: 'B', removed: true }]);
+    expect(rosterOf(g).map((m) => m.id)).toEqual(['a']);
+  });
+});
+
+describe('zeroMember', () => {
+  it('全ドリンク0の Member を作る', () => {
+    const z = zeroMember({ id: 'z', name: 'Z' });
+    expect(z.totalDrinks).toBe(0);
+    expect(z.drinks).toEqual({ beer: 0, highball: 0, sour: 0, other: 0 });
+    expect(z.megaDrinks).toEqual({ beer: 0, highball: 0, sour: 0, other: 0 });
   });
 });

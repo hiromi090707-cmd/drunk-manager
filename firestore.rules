@@ -49,6 +49,12 @@ service cloud.firestore {
         && changedKeys().hasOnly(['inviteCode', 'claudeApiKey']);
     }
 
+    // 名簿変更: 既存メンバーが members 配列のみを変更
+    function editsRoster(groupId) {
+      return isMember(groupId)
+        && changedKeys().hasOnly(['members']);
+    }
+
     // 許可ユーザーリストは認証済みなら誰でも読める（ログイン確認のため）
     match /config/allowedUsers {
       allow read: if isAuthenticated();
@@ -61,7 +67,7 @@ service cloud.firestore {
       allow create: if isAllowed()
                        && request.resource.data.memberUids == [request.auth.uid]
                        && request.resource.data.memberEmails == [request.auth.token.email];
-      allow update: if isAllowed() && (joinsSelf() || leavesSelf() || editsSettings(groupId));
+      allow update: if isAllowed() && (joinsSelf() || leavesSelf() || editsSettings(groupId) || editsRoster(groupId));
       allow delete: if false;
 
       match /parties/{partyId} {

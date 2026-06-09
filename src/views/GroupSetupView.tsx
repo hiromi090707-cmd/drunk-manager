@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import { createGroup, joinGroupByCode, listenToParties } from '../lib/db';
 import { logout } from '../lib/auth';
 import { auth } from '../firebase';
-import { FIXED_MEMBERS } from '../constants';
 import { BrandLogo } from '../components/BrandLogo';
 
 export function GroupSetupView() {
@@ -18,11 +17,11 @@ export function GroupSetupView() {
     const code = customCode.trim().toUpperCase();
     if (code && code.length < 2) return alert('招待コードは2文字以上で入力してください。');
     try {
-      const group = await createGroup('いつメン', [...FIXED_MEMBERS], user.uid, user.email, code || undefined);
+      const group = await createGroup('いつメン', [], user.uid, user.email, code || undefined);
       dispatch({ type: 'SET_GROUP', group });
       listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
-      alert(`グループを作成しました！\n\n招待コード: ${group.inviteCode}\n\nこのコードを仲間に共有してください。`);
-      dispatch({ type: 'SET_VIEW', view: 'home' });
+      alert(`グループを作成しました！\n\n招待コード: ${group.inviteCode}\n\n続いてメンバーを追加してください。`);
+      dispatch({ type: 'SET_VIEW', view: 'memberManage' });
     } catch {
       alert('グループ作成に失敗しました。');
     }

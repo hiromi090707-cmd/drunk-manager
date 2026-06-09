@@ -1,7 +1,7 @@
 export type DrinkType = 'beer' | 'highball' | 'sour' | 'other';
 export type PartyTab = 'members' | 'split' | 'summary';
 export type StatsTab = 'day' | 'month' | 'year' | 'all';
-export type AppView = 'loading' | 'login' | 'groupSetup' | 'home' | 'party' | 'stats' | 'shareChoice';
+export type AppView = 'loading' | 'login' | 'groupSetup' | 'home' | 'party' | 'stats' | 'shareChoice' | 'memberManage';
 
 export interface Member {
   id: string;
@@ -28,12 +28,18 @@ export interface Party {
   updatedAt?: unknown;
 }
 
+export interface GroupMember {
+  id: string;
+  name: string;
+  removed?: boolean;
+}
+
 export interface Group {
   id: string;
   name: string;
   memberUids: string[];
   memberEmails: string[];
-  members: { id: string; name: string }[];
+  members: GroupMember[];
   inviteCode: string;
   claudeApiKey?: string;
   geminiApiKey?: string;
