@@ -39,7 +39,8 @@ export function getMemberStats(historyArray: Party[], roster: { id: string; name
     }
   });
 
-  return Object.values(stats).sort((a, b) => b.amount - a.amount);
+  // 飲んだ杯数の多い順。同数なら金額が多い方を上に。
+  return Object.values(stats).sort((a, b) => b.totalDrinks - a.totalDrinks || b.amount - a.amount);
 }
 
 export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
@@ -51,7 +52,7 @@ export function MemberStatsList({ historyArray }: { historyArray: Party[] }) {
 
   return (
     <div className="glass p-4 mb-4">
-      <h3 className="mb-4 text-center text-sm text-muted">メンバー別 集計</h3>
+      <h3 className="mb-4 text-center text-sm text-muted">メンバー別 集計（杯数の多い順）</h3>
       <div className="flex flex-col" style={{ gap: '1.1rem' }}>
         {statsArray.map((m, i) => (
           <div key={m.name} style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
