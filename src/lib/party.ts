@@ -1,18 +1,25 @@
 import { FIXED_MEMBERS, SPLIT_ROLES, DRINK_TYPES } from '../constants';
 import type { DrinkType, Group, Member, Party, PartyState } from '../types';
 import { createParty } from './db';
+import { activeRoster } from './roster';
 
 type Roster = { id: string; name: string }[];
 
-// グループに保存されたメンバーを正とし、未設定時のみ FIXED_MEMBERS にフォールバックする。
-// 友人追加・グループ共有機能が入っても、メンバーの出所はこの一点だけを見ればよい。
+// group が null のとき（初期/ログアウト時）だけ FIXED_MEMBERS にフォールバックする。
+// group があれば、たとえ名簿が空（新規グループ）でもそれを尊重し、removed は除外する。
 export function rosterOf(group: Group | null): Roster {
-  return group?.members?.length ? group.members : [...FIXED_MEMBERS];
+  if (!group) return [...FIXED_MEMBERS];
+  return activeRoster(group.members ?? []);
 }
 
 // DRINK_TYPES から空のドリンクカウントを生成（種類の増減に自動追従させ、手書き重複を防ぐ）
 export function emptyDrinks(): Record<DrinkType, number> {
   return Object.fromEntries(DRINK_TYPES.map((d) => [d.id, 0])) as Record<DrinkType, number>;
+}
+
+// 1メンバー分の「全ドリンク0」Member を作る（進行中パーティへの途中追加に使う）。
+export function zeroMember(m: { id: string; name: string }): Member {
+  return { id: m.id, name: m.name, drinks: emptyDrinks(), megaDrinks: emptyDrinks(), totalDrinks: 0 };
 }
 
 // roster の全員を「普通」(SPLIT_ROLES[1]) で初期化した傾斜配分マップ
@@ -86,7 +93,7 @@ export function membersToMap(members: Member[]): Record<string, Member> {
 
 // 購読で受け取ったサーバー由来の members を、現在のローカル members にメンバー単位でマージする。
 // 変化があったメンバーだけ差し替えるため、自分が入力中（楽観更新済み）のメンバーは保持されやすい。
-// 固定ロスター前提なので current に無いメンバー（incoming のみに存在）は取り込まない。
+// incoming にしか居ないメンバー（他端末で途中追加された人）は末尾に取り込む。
 // 既知の制限: 同一メンバーを高速連打すると、確定前の古いサーバースナップショットが一瞬反映されて
 // カウントが揺れることがあるが、最終的に最新値へ収束する（恒久的なズレは生じない）。
 export function mergeMembers(
@@ -103,5 +110,12 @@ export function mergeMembers(
     }
     return m;
   });
+  const currentIds = new Set(current.map((m) => m.id));
+  for (const m of incoming) {
+    if (!currentIds.has(m.id)) {
+      merged.push(m);
+      changed = true;
+    }
+  }
   return { merged, changed };
 }
