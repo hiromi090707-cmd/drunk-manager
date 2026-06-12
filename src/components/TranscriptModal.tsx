@@ -34,7 +34,7 @@ export function TranscriptModal({ party, onClose }: Props) {
         </div>
         <div
           className="text-muted"
-          style={{ overflowY: 'auto', whiteSpace: 'pre-wrap', fontSize: '0.85rem', lineHeight: 1.7 }}
+          style={{ flex: 1, minHeight: 0, overflowY: 'auto', whiteSpace: 'pre-wrap', fontSize: '0.85rem', lineHeight: 1.7 }}
         >
           {party.summaryRaw || party.summaryText || '記録テキストはありません'}
         </div>
