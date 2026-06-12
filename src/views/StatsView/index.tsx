@@ -47,8 +47,8 @@ export function StatsView() {
             key={tab.id}
             onClick={() => dispatch({ type: 'SET_STATS_TAB', tab: tab.id })}
             style={{
-              flex: 1, border: 'none', borderRadius: 9, padding: '0.4rem',
-              fontFamily: 'var(--font-pop)',
+              flex: 1, border: 'none', borderRadius: 9, padding: '0.4rem 0.2rem',
+              fontFamily: 'var(--font-pop)', fontSize: '0.8rem', whiteSpace: 'nowrap',
               background: activeStatsTab === tab.id ? 'var(--accent-gradient)' : 'transparent',
               color: activeStatsTab === tab.id ? '#3a1402' : 'var(--text-secondary)',
               cursor: 'pointer',
