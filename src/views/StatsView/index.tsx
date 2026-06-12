@@ -3,6 +3,7 @@ import { DayStats } from './DayStats';
 import { MonthStats } from './MonthStats';
 import { YearStats } from './YearStats';
 import { AllStats } from './AllStats';
+import { SearchStats } from './SearchStats';
 import { buildEditPartyState } from '../../lib/party';
 import { deleteParty } from '../../lib/db';
 import type { Party } from '../../types';
@@ -12,6 +13,7 @@ const STAT_TABS = [
   { id: 'month' as const, label: '月別' },
   { id: 'year' as const, label: '年別' },
   { id: 'all' as const, label: '全期間' },
+  { id: 'search' as const, label: '検索' },
 ];
 
 export function StatsView() {
@@ -61,6 +63,7 @@ export function StatsView() {
       {activeStatsTab === 'month' && <MonthStats historyData={historyData} statsDate={statsDate} onEditParty={handleEditParty} onDeleteParty={handleDeleteParty} />}
       {activeStatsTab === 'year' && <YearStats historyData={historyData} statsDate={statsDate} />}
       {activeStatsTab === 'all' && <AllStats historyData={historyData} />}
+      {activeStatsTab === 'search' && <SearchStats historyData={historyData} />}
     </div>
   );
 }
