@@ -43,10 +43,10 @@ service cloud.firestore {
              == resource.data.memberEmails.toSet().difference([request.auth.token.email].toSet());
     }
 
-    // 設定変更: 既存メンバーが招待コード / Claude APIキー のみ変更
+    // 設定変更: 既存メンバーが招待コードのみ変更
     function editsSettings(groupId) {
       return isMember(groupId)
-        && changedKeys().hasOnly(['inviteCode', 'claudeApiKey']);
+        && changedKeys().hasOnly(['inviteCode']);
     }
 
     // 名簿変更: 既存メンバーが members 配列のみを変更

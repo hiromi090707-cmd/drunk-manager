@@ -475,7 +475,6 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
         memberEmails: [USER_A.email],
         members: TEST_MEMBERS,
         inviteCode: 'SWAPBB',
-        claudeApiKey: '',
         createdBy: USER_A.uid,
       });
       groupBId = ref.id;
@@ -535,7 +534,6 @@ describe('groups 更新ルールの最小権限', () => {
         memberEmails: [USER_A.email, USER_B.email],
         members: TEST_MEMBERS,
         inviteCode: 'DELME1',
-        claudeApiKey: '',
         createdBy: USER_A.uid,
       });
       groupId = ref.id;
@@ -575,7 +573,6 @@ describe('groups 更新ルールの最小権限', () => {
         memberEmails: ['outsider@example.com'],
         members: TEST_MEMBERS,
         inviteCode: 'OUT001',
-        claudeApiKey: '',
         createdBy: 'uid-outsider',
       }),
     );
@@ -591,7 +588,6 @@ describe('groups 更新ルールの最小権限', () => {
         memberEmails: [USER_A.email, USER_B.email],
         members: TEST_MEMBERS,
         inviteCode: 'OUT002',
-        claudeApiKey: '',
         createdBy: USER_A.uid,
       }),
     );
@@ -608,7 +604,6 @@ describe('groups 更新ルールの最小権限', () => {
         memberEmails: [USER_A.email, USER_B.email],
         members: TEST_MEMBERS,
         inviteCode: 'LV0001',
-        claudeApiKey: '',
         createdBy: USER_A.uid,
       });
       groupId = ref.id;
@@ -627,24 +622,34 @@ describe('groups 更新ルールの最小権限', () => {
     });
   });
 
-  it('メンバーは claudeApiKey のみを変更できる', async () => {
+  it('メンバーでも claudeApiKey は変更できない（AI撤去後）', async () => {
     await signInAs(USER_A);
     const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'APIK01');
 
     const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
-    await assertSucceeds(
+    await assertFails(
       aCtx.firestore().collection('groups').doc(group.id).update({ claudeApiKey: 'sk-test' }),
     );
   });
 
-  it('非メンバーは設定（claudeApiKey）を変更できない', async () => {
+  it('メンバーは inviteCode のみの変更ができる', async () => {
     await signInAs(USER_A);
     const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'APIK02');
+
+    const aCtx = testEnv.authenticatedContext(USER_A.uid, { email: USER_A.email });
+    await assertSucceeds(
+      aCtx.firestore().collection('groups').doc(group.id).update({ inviteCode: 'APIK03' }),
+    );
+  });
+
+  it('非メンバーは設定（inviteCode）を変更できない', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('G', TEST_MEMBERS, USER_A.uid, USER_A.email, 'APIK04');
 
     // USER_B は当グループの非メンバー
     const bCtx = testEnv.authenticatedContext(USER_B.uid, { email: USER_B.email });
     await assertFails(
-      bCtx.firestore().collection('groups').doc(group.id).update({ claudeApiKey: 'sk-evil' }),
+      bCtx.firestore().collection('groups').doc(group.id).update({ inviteCode: 'EVIL01' }),
     );
   });
 });
@@ -672,7 +677,6 @@ describe('招待コードのリネーム', () => {
         memberEmails: [USER_B.email],
         members: TEST_MEMBERS,
         inviteCode: 'TAKEN1',
-        claudeApiKey: '',
         createdBy: USER_B.uid,
       });
     });
