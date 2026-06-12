@@ -25,4 +25,3 @@ export const SPLIT_ROLES = [
   { id: 0.0, label: 'ゼロ', color: 'var(--text-secondary)' },
 ];
 
-export const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
