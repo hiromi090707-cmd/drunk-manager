@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Party } from '../types';
 import { formatYen } from '../lib/format';
+import { TranscriptModal } from './TranscriptModal';
 
 interface Props {
   party: Party;
@@ -9,6 +11,8 @@ interface Props {
 }
 
 export function PartyHistoryCard({ party, title, onEdit, onDelete }: Props) {
+  const [showTranscript, setShowTranscript] = useState(false);
+
   return (
     <div className="glass p-3" style={{ fontSize: '0.9rem' }}>
       <div className="flex justify-between items-center mb-1">
@@ -22,8 +26,12 @@ export function PartyHistoryCard({ party, title, onEdit, onDelete }: Props) {
       )}
       <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.8rem' }}>
         <button onClick={() => onEdit(party)} className="btn btn-sm btn-dashed" style={{ flex: 1 }}>📝 編集</button>
+        {party.summaryRaw && (
+          <button onClick={() => setShowTranscript(true)} className="btn btn-sm btn-dashed">📜 全文</button>
+        )}
         <button onClick={() => onDelete(party)} className="btn btn-sm btn-dashed-danger">🗑 削除</button>
       </div>
+      {showTranscript && <TranscriptModal party={party} onClose={() => setShowTranscript(false)} />}
     </div>
   );
 }
