@@ -41,8 +41,6 @@ export interface Group {
   memberEmails: string[];
   members: GroupMember[];
   inviteCode: string;
-  claudeApiKey?: string;
-  geminiApiKey?: string;
   createdAt?: unknown;
   createdBy?: string;
 }
