@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:unit": "SKIP_EMULATOR_CHECK=1 vitest run src/lib/alcohol.test.ts src/lib/party.test.ts src/lib/roster.test.ts src/lib/onboarding.test.ts",
+    "test:unit": "SKIP_EMULATOR_CHECK=1 vitest run src/lib/alcohol.test.ts src/lib/party.test.ts src/lib/roster.test.ts src/lib/onboarding.test.ts src/lib/search.test.ts",
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "test:emulators": "firebase emulators:exec --only auth,firestore \"npm run test\"",
