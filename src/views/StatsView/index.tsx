@@ -3,6 +3,7 @@ import { DayStats } from './DayStats';
 import { MonthStats } from './MonthStats';
 import { YearStats } from './YearStats';
 import { AllStats } from './AllStats';
+import { SearchStats } from './SearchStats';
 import { buildEditPartyState } from '../../lib/party';
 import { deleteParty } from '../../lib/db';
 import type { Party } from '../../types';
@@ -12,6 +13,7 @@ const STAT_TABS = [
   { id: 'month' as const, label: '月別' },
   { id: 'year' as const, label: '年別' },
   { id: 'all' as const, label: '全期間' },
+  { id: 'search' as const, label: '検索' },
 ];
 
 export function StatsView() {
@@ -45,8 +47,8 @@ export function StatsView() {
             key={tab.id}
             onClick={() => dispatch({ type: 'SET_STATS_TAB', tab: tab.id })}
             style={{
-              flex: 1, border: 'none', borderRadius: 9, padding: '0.4rem',
-              fontFamily: 'var(--font-pop)',
+              flex: 1, border: 'none', borderRadius: 9, padding: '0.4rem 0.2rem',
+              fontFamily: 'var(--font-pop)', fontSize: '0.8rem', whiteSpace: 'nowrap',
               background: activeStatsTab === tab.id ? 'var(--accent-gradient)' : 'transparent',
               color: activeStatsTab === tab.id ? '#3a1402' : 'var(--text-secondary)',
               cursor: 'pointer',
@@ -61,6 +63,7 @@ export function StatsView() {
       {activeStatsTab === 'month' && <MonthStats historyData={historyData} statsDate={statsDate} onEditParty={handleEditParty} onDeleteParty={handleDeleteParty} />}
       {activeStatsTab === 'year' && <YearStats historyData={historyData} statsDate={statsDate} />}
       {activeStatsTab === 'all' && <AllStats historyData={historyData} />}
+      {activeStatsTab === 'search' && <SearchStats historyData={historyData} />}
     </div>
   );
 }

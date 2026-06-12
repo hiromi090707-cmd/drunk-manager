@@ -70,7 +70,7 @@ export function PartyView() {
   const tabs = [
     { id: 'members' as const, label: '🍻 メンバー' },
     { id: 'split' as const, label: '💰 割り勘' },
-    { id: 'summary' as const, label: '✨ 要約' },
+    { id: 'summary' as const, label: '📝 記録' },
   ];
 
   return (

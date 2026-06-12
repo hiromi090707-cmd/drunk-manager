@@ -40,7 +40,6 @@ export async function createGroup(
     memberEmails: [creatorEmail],
     members,
     inviteCode,
-    claudeApiKey: '',
     createdAt: serverTimestamp(),
     createdBy: creatorUid,
   };
@@ -93,13 +92,6 @@ export async function findUserGroup(uid: string): Promise<Group | null> {
   return userGroup;
 }
 
-export async function getGroupInfo(): Promise<Group | null> {
-  if (!activeGroupId) return null;
-  const docSnap = await getDoc(doc(db, 'groups', activeGroupId));
-  if (docSnap.exists()) return { id: docSnap.id, ...docSnap.data() } as Group;
-  return null;
-}
-
 export async function leaveGroup(uid: string, email: string): Promise<void> {
   if (!activeGroupId) return;
   await updateDoc(doc(db, 'groups', activeGroupId), {
@@ -109,23 +101,11 @@ export async function leaveGroup(uid: string, email: string): Promise<void> {
   activeGroupId = null;
 }
 
-export async function saveClaudeApiKey(apiKey: string): Promise<void> {
-  if (!activeGroupId) return;
-  await updateDoc(doc(db, 'groups', activeGroupId), { claudeApiKey: apiKey });
-}
-
 // グループの名簿（members 配列）を丸ごと更新する。removed を含むフル配列を渡すこと。
 // parties の members マップとは別物（こちらは配列）。
 export async function updateGroupMembers(members: GroupMember[]): Promise<void> {
   if (!activeGroupId) return;
   await updateDoc(doc(db, 'groups', activeGroupId), { members });
-}
-
-export async function getClaudeApiKey(): Promise<string> {
-  if (!activeGroupId) return '';
-  const info = await getGroupInfo();
-  // 旧Geminiキーからの移行サポート
-  return info?.claudeApiKey || info?.geminiApiKey || '';
 }
 
 export async function createParty(initialData: Partial<Party>): Promise<string> {
