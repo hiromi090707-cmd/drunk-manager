@@ -44,13 +44,18 @@ export async function joinGroupByCode(inviteCode: string, uid: string, email: st
   const docSnap = snapshot.docs[0];
   const targetGroup = { id: docSnap.id, ...docSnap.data() } as Group;
 
-  if (!targetGroup.memberUids.includes(uid)) {
-    await updateDoc(doc(db, 'groups', targetGroup.id), {
-      memberUids: [...targetGroup.memberUids, uid],
-      memberEmails: [...(targetGroup.memberEmails || []), email],
-    });
-  }
-  return targetGroup;
+  // 参加済みならそのまま返す（memberUids に自分が居るので合成不要）
+  if (targetGroup.memberUids.includes(uid)) return targetGroup;
+
+  // 1人1グループの不変条件。UI からは通常到達しない防波堤
+  const current = await findUserGroup(uid);
+  if (current) throw new Error('既に別のグループに参加しています。先に退出してください。');
+
+  const memberUids = [...targetGroup.memberUids, uid];
+  const memberEmails = [...(targetGroup.memberEmails || []), email];
+  await updateDoc(doc(db, 'groups', targetGroup.id), { memberUids, memberEmails });
+  // 更新前のスナップショットではなく、自分を含めた姿をローカル合成して返す（再読取なし）
+  return { ...targetGroup, memberUids, memberEmails };
 }
 
 export async function updateInviteCode(groupId: string, newCode: string): Promise<string> {

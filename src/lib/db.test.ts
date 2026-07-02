@@ -205,6 +205,43 @@ describe('グループ作成・参加', () => {
       }),
     );
   });
+
+  it('joinGroupByCode は自分を含めた更新後の Group を返す', async () => {
+    await signInAs(USER_A);
+    await createGroup('返り値テスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'RETVAL');
+
+    await signInAs(USER_B);
+    const joined = await joinGroupByCode('RETVAL', USER_B.uid, USER_B.email);
+
+    // 更新前のスナップショットではなく、自分を含めた姿が返ること
+    expect(joined.memberUids).toContain(USER_B.uid);
+    expect(joined.memberEmails).toContain(USER_B.email);
+  });
+
+  it('別グループ所属中の joinGroupByCode は拒否される（1人1グループ）', async () => {
+    // B が自分のグループを持っている状態を作る
+    await signInAs(USER_B);
+    await createGroup('Bのグループ', TEST_MEMBERS, USER_B.uid, USER_B.email, 'BHOME1');
+
+    // A のグループも用意
+    await signInAs(USER_A);
+    await createGroup('Aのグループ', TEST_MEMBERS, USER_A.uid, USER_A.email, 'AHOME1');
+
+    // B が A のグループに参加しようとする
+    await signInAs(USER_B);
+    await expect(joinGroupByCode('AHOME1', USER_B.uid, USER_B.email)).rejects.toThrow(
+      '既に別のグループに参加しています',
+    );
+  });
+
+  it('参加済みグループへの joinGroupByCode はそのまま Group を返す', async () => {
+    await signInAs(USER_A);
+    const group = await createGroup('再参加テスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'REJOIN');
+
+    const again = await joinGroupByCode('REJOIN', USER_A.uid, USER_A.email);
+    expect(again.id).toBe(group.id);
+    expect(again.memberUids).toContain(USER_A.uid);
+  });
 });
 
 describe('パーティの保存・取得', () => {
