@@ -29,8 +29,10 @@ export function StatsView() {
   }
 
   async function handleDeleteParty(party: Party) {
+    const groupId = state.groupInfo?.id;
+    if (!groupId) return;
     if (!confirm('この飲み会の記録を削除しますか？')) return;
-    await deleteParty(party._docId);
+    await deleteParty(groupId, party._docId);
   }
 
   return (

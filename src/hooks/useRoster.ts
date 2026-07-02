@@ -16,7 +16,7 @@ export function useRoster() {
 
   async function commit(members: GroupMember[]) {
     if (!group) return;
-    await updateGroupMembers(members);
+    await updateGroupMembers(group.id, members);
     dispatch({ type: 'SET_GROUP', group: { ...group, members } });
   }
 
@@ -26,7 +26,7 @@ export function useRoster() {
     const { members, added } = addMemberToRoster(group.members, name);
     await commit(members);
     const partyId = activePartyId ?? findActiveParty(state.historyData)?._docId ?? null;
-    if (partyId) await updateMemberDrinks(partyId, zeroMember(added));
+    if (partyId) await updateMemberDrinks(group.id, partyId, zeroMember(added));
     return added;
   }
 
@@ -42,7 +42,7 @@ export function useRoster() {
     await commit(restoreToRoster(group.members, id));
     const active = findActiveParty(state.historyData);
     if (active && target && !active.members.some((m) => m.id === id)) {
-      await updateMemberDrinks(active._docId, zeroMember(target));
+      await updateMemberDrinks(group.id, active._docId, zeroMember(target));
     }
   }
 

@@ -8,8 +8,10 @@ export function ShareChoiceView() {
   const recentParties = [...historyData].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5);
 
   async function handleShareNew() {
+    const group = state.groupInfo;
+    if (!group) return;
     try {
-      const newParty = await createNewParty(rosterOf(state.groupInfo), sharedText);
+      const newParty = await createNewParty(group.id, rosterOf(group), sharedText);
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'summary' });
       dispatch({ type: 'SET_VIEW', view: 'party' });

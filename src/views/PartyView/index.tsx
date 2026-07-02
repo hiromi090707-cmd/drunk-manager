@@ -10,13 +10,14 @@ import { SummaryTab } from './SummaryTab';
 export function PartyView() {
   const { state, dispatch } = useApp();
   const { partyState, activePartyTab, editingExistingParty: isEditing } = state;
+  const groupId = state.groupInfo?.id ?? null;
   const listenerRef = useRef<(() => void) | null>(null);
   const partyStateRef = useRef(partyState);
   partyStateRef.current = partyState;
 
   useEffect(() => {
-    if (!partyState.id) return;
-    listenerRef.current = listenToParty(partyState.id, (updated) => {
+    if (!partyState.id || !groupId) return;
+    listenerRef.current = listenToParty(groupId, partyState.id, (updated) => {
       const current = partyStateRef.current;
       const { merged, changed } = mergeMembers(current.members, updated.members ?? []);
       if (changed) {
@@ -24,7 +25,7 @@ export function PartyView() {
       }
     });
     return () => { listenerRef.current?.(); };
-  }, [partyState.id]);
+  }, [partyState.id, groupId]);
 
   function updatePartyState(updated: PartyState) {
     dispatch({ type: 'SET_PARTY_STATE', party: updated });
@@ -34,8 +35,9 @@ export function PartyView() {
     const msg = isEditing ? '変更内容を保存しますか？' : '飲み会を終了して履歴に保存しますか？';
     if (!confirm(msg)) return;
     const result = calculateSplit(partyState);
+    if (!groupId) return;
     try {
-      await saveParty({
+      await saveParty(groupId, {
         _docId: partyState.id ?? '',
         id: partyState.id ?? undefined,
         startTime: partyState.startTime ?? new Date().toISOString(),

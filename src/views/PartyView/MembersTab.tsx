@@ -5,6 +5,7 @@ import { emptyDrinks, zeroMember } from '../../lib/party';
 import { megaTotal } from '../../lib/alcohol';
 import { updateMemberDrinks } from '../../lib/db';
 import { useRoster } from '../../hooks/useRoster';
+import { useApp } from '../../context/AppContext';
 
 interface Props {
   partyState: PartyState;
@@ -14,6 +15,8 @@ interface Props {
 export function MembersTab({ partyState, onUpdate }: Props) {
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [megaMode, setMegaMode] = useState(false);
+  const { state } = useApp();
+  const groupId = state.groupInfo?.id ?? null;
   const { addMember } = useRoster();
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -45,7 +48,7 @@ export function MembersTab({ partyState, onUpdate }: Props) {
     });
     const updated = { ...partyState, members };
     onUpdate(updated);
-    if (partyState.id && changed) updateMemberDrinks(partyState.id, changed).catch(console.error);
+    if (groupId && partyState.id && changed) updateMemberDrinks(groupId, partyState.id, changed).catch(console.error);
   }
 
   function handlePressStart(mId: string, type: string) {
