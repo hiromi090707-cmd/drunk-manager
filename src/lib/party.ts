@@ -58,11 +58,11 @@ export function buildEditPartyState(party: Party): PartyState {
 }
 
 // 新規パーティを Firestore に作成し、対応する PartyState を返す
-export async function createNewParty(roster: Roster, rawText = ''): Promise<PartyState> {
+export async function createNewParty(groupId: string, roster: Roster, rawText = ''): Promise<PartyState> {
   const roles = defaultSplitRoles(roster);
   const members = createInitialMembers(roster);
   const startTime = new Date().toISOString();
-  const id = await createParty({ areaName: '', storeName: '', startTime, members, totalAmount: 0, splitRoles: roles });
+  const id = await createParty(groupId, { areaName: '', storeName: '', startTime, members, totalAmount: 0, splitRoles: roles });
   return {
     id, areaName: '', storeName: '', startTime,
     members,

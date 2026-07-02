@@ -17,15 +17,12 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import {
-  cleanup,
   createGroup,
   createParty,
-  getActiveGroup,
   joinGroupByCode,
   leaveGroup,
   listenToParties,
   saveParty,
-  setActiveGroup,
   updateGroupMembers,
   updateInviteCode,
   updateMemberDrinks,
@@ -68,6 +65,7 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * リスナーから「指定の条件を満たすパーティ一覧」を最初に受け取るまで待つ。
  */
 function waitForParties(
+  groupId: string,
   predicate: (parties: Party[]) => boolean,
   timeoutMs = 5000,
 ): Promise<{ parties: Party[]; unsubscribe: () => void }> {
@@ -78,7 +76,7 @@ function waitForParties(
       rejectP(new Error(`waitForParties: タイムアウト (${timeoutMs}ms)`));
     }, timeoutMs);
 
-    unsub = listenToParties((parties) => {
+    unsub = listenToParties(groupId, (parties) => {
       if (predicate(parties)) {
         clearTimeout(timer);
         resolveP({ parties, unsubscribe: unsub });
@@ -116,8 +114,6 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  // db.ts 側のモジュール状態（activeGroupId・historyUnsubscribe）をリセット
-  cleanup();
   // onSnapshot の gRPC stream cancel が完全に伝播するまで一呼吸置く。
   // これがないと clearFirestore の REST 呼び出しと競合して CANCELLED になる。
   await wait(50);
@@ -136,13 +132,12 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  cleanup();
   await signOut(auth);
   await testEnv.cleanup();
 });
 
 describe('グループ作成・参加', () => {
-  it('createGroup でグループを作成し activeGroupId が設定される', async () => {
+  it('createGroup でグループを作成できる', async () => {
     const group = await createGroup(
       'テストグループA',
       TEST_MEMBERS,
@@ -155,7 +150,6 @@ describe('グループ作成・参加', () => {
     expect(group.name).toBe('テストグループA');
     expect(group.memberUids).toContain(USER_A.uid);
     expect(group.inviteCode).toBe('CODEAA');
-    expect(getActiveGroup()).toBe(group.id);
   });
 
   it('joinGroupByCode で新メンバー本人が招待コードで参加できる', async () => {
@@ -174,7 +168,6 @@ describe('グループ作成・参加', () => {
     const joined = await joinGroupByCode('JOIN01', USER_B.uid, USER_B.email);
 
     expect(joined.id).toBe(groupA.id);
-    expect(getActiveGroup()).toBe(groupA.id);
 
     // memberUids/memberEmails に B が追加されたことをルール無効化で直接確認
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
@@ -216,10 +209,10 @@ describe('グループ作成・参加', () => {
 
 describe('パーティの保存・取得', () => {
   it('createParty → saveParty → listenToParties でデータが取得できる', async () => {
-    await createGroup('保存テスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'SAVE01');
+    const group = await createGroup('保存テスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'SAVE01');
 
     // createParty が返す自動生成IDを _docId・id 両方に使い、saveParty と同じドキュメントを指すようにする
-    const partyId = await createParty({
+    const partyId = await createParty(group.id, {
       areaName: '渋谷',
       storeName: '居酒屋A',
       startTime: '2026-05-25T18:00:00.000Z',
@@ -240,9 +233,10 @@ describe('パーティの保存・取得', () => {
       totalAmount: 5000,
       splitRoles: {},
     };
-    await saveParty(party);
+    await saveParty(group.id, party);
 
     const { parties, unsubscribe } = await waitForParties(
+      group.id,
       (ps) => ps.some((p) => p.storeName === '居酒屋A' && p.totalAmount === 5000),
     );
     unsubscribe();
@@ -260,20 +254,19 @@ describe('パーティの保存・取得', () => {
 
   it('updateMemberDrinks は他メンバーのカウントを保持する（同時更新の衝突回避）', async () => {
     await signInAs(USER_A);
-    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email);
-    const gid = getActiveGroup()!;
+    const gid = (await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email)).id;
     const mk = (id: string, beer: number): Member => ({
       id, name: id, drinks: { beer, highball: 0, sour: 0, other: 0 },
       megaDrinks: { beer: 0, highball: 0, sour: 0, other: 0 }, totalDrinks: beer,
     });
-    const partyId = await createParty({
+    const partyId = await createParty(gid, {
       areaName: '', storeName: '', startTime: new Date().toISOString(),
       members: [mk('m1', 0), mk('m2', 0)], totalAmount: 0, splitRoles: {},
     });
 
     // m1 と m2 を別々に部分更新
-    await updateMemberDrinks(partyId, mk('m1', 3));
-    await updateMemberDrinks(partyId, mk('m2', 5));
+    await updateMemberDrinks(gid, partyId, mk('m1', 3));
+    await updateMemberDrinks(gid, partyId, mk('m2', 5));
 
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const snap = await ctx.firestore().doc(`groups/${gid}/parties/${partyId}`).get();
@@ -285,9 +278,8 @@ describe('パーティの保存・取得', () => {
 
   it('saveParty は members をマップ形式（id キー）で Firestore に保存する', async () => {
     await signInAs(USER_A);
-    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MAP001');
-    const gid = getActiveGroup()!;
-    const partyId = await createParty({
+    const gid = (await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MAP001')).id;
+    const partyId = await createParty(gid, {
       areaName: '', storeName: '', startTime: new Date().toISOString(),
       members: [
         { id: 'm1', name: 'メンバー1', drinks: { beer: 2, highball: 0, sour: 0, other: 0 }, megaDrinks: { beer: 0, highball: 0, sour: 0, other: 0 }, totalDrinks: 2 },
@@ -307,9 +299,8 @@ describe('パーティの保存・取得', () => {
 describe('名簿（members）の編集', () => {
   it('updateGroupMembers が members 配列を更新する', async () => {
     await signInAs(USER_A);
-    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST01');
-    const gid = getActiveGroup()!;
-    await updateGroupMembers([...TEST_MEMBERS, { id: 'm_new', name: '新メンバー' }]);
+    const gid = (await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST01')).id;
+    await updateGroupMembers(gid, [...TEST_MEMBERS, { id: 'm_new', name: '新メンバー' }]);
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const snap = await ctx.firestore().collection('groups').doc(gid).get();
       expect(snap.data()?.members).toHaveLength(3);
@@ -318,9 +309,8 @@ describe('名簿（members）の編集', () => {
 
   it('removed フラグでソフト削除を保存できる', async () => {
     await signInAs(USER_A);
-    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST02');
-    const gid = getActiveGroup()!;
-    await updateGroupMembers([
+    const gid = (await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'ROST02')).id;
+    await updateGroupMembers(gid, [
       { id: 'm1', name: 'メンバー1', removed: true },
       { id: 'm2', name: 'メンバー2' },
     ]);
@@ -333,13 +323,12 @@ describe('名簿（members）の編集', () => {
 
   it('進行中パーティへ updateMemberDrinks で新メンバーを追加できる（カスケード）', async () => {
     await signInAs(USER_A);
-    await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'CASC01');
-    const gid = getActiveGroup()!;
-    const partyId = await createParty({
+    const gid = (await createGroup('g', TEST_MEMBERS, USER_A.uid, USER_A.email, 'CASC01')).id;
+    const partyId = await createParty(gid, {
       areaName: '', storeName: '', startTime: new Date().toISOString(),
       members: [zeroMember({ id: 'm1', name: 'メンバー1' })], totalAmount: 0, splitRoles: {},
     });
-    await updateMemberDrinks(partyId, zeroMember({ id: 'm_new', name: '途中参加' }));
+    await updateMemberDrinks(gid, partyId, zeroMember({ id: 'm_new', name: '途中参加' }));
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const snap = await ctx.firestore().doc(`groups/${gid}/parties/${partyId}`).get();
       const data = snap.data()!;
@@ -394,7 +383,7 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
       'GRPA01',
     );
 
-    await saveParty({
+    await saveParty(groupA.id, {
       _docId: 'pa-1',
       id: 'pa-1',
       areaName: '渋谷',
@@ -407,15 +396,14 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
 
     // Aのリスナーが「A店」を受け取ることを一度確認
     {
-      const { unsubscribe } = await waitForParties((ps) =>
+      const { unsubscribe } = await waitForParties(groupA.id, (ps) =>
         ps.some((p) => p.storeName === 'A店'),
       );
       unsubscribe();
     }
 
-    // === 2. グループAから退出（activeGroupId は null になる） ===
-    await leaveGroup(USER_A.uid, USER_A.email);
-    expect(getActiveGroup()).toBeNull();
+    // === 2. グループAから退出 ===
+    await leaveGroup(groupA.id, USER_A.uid, USER_A.email);
 
     // === 3. グループBを作成 ===
     const groupB = await createGroup(
@@ -425,11 +413,10 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
       USER_A.email,
       'GRPB01',
     );
-    expect(getActiveGroup()).toBe(groupB.id);
     expect(groupB.id).not.toBe(groupA.id);
 
     // === 4. Bにパーティを保存 → 新しい listenToParties はBのデータだけ受け取る ===
-    await saveParty({
+    await saveParty(groupB.id, {
       _docId: 'pb-1',
       id: 'pb-1',
       areaName: '新宿',
@@ -440,7 +427,7 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
       splitRoles: {},
     });
 
-    const { parties, unsubscribe } = await waitForParties((ps) =>
+    const { parties, unsubscribe } = await waitForParties(groupB.id, (ps) =>
       ps.some((p) => p.storeName === 'B店'),
     );
     unsubscribe();
@@ -451,10 +438,9 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
     expect(storeNames).not.toContain('A店');
   });
 
-  it('setActiveGroup で別グループに切り替えた後、リスナーは新グループのデータのみ流す', async () => {
-    // 直接 setActiveGroup を使うパターン（findUserGroup 経由の切り替えを模擬）
+  it('別グループの listenToParties は新グループのデータのみ流す', async () => {
     const groupA = await createGroup('A', TEST_MEMBERS, USER_A.uid, USER_A.email, 'SWAPAA');
-    await saveParty({
+    await saveParty(groupA.id, {
       _docId: 'a',
       id: 'a',
       areaName: '渋谷',
@@ -491,14 +477,12 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
 
     // 一旦Aを聴いて反映確認 → リスナー解除
     {
-      const { unsubscribe } = await waitForParties((ps) => ps.some((p) => p.storeName === 'A店'));
+      const { unsubscribe } = await waitForParties(groupA.id, (ps) => ps.some((p) => p.storeName === 'A店'));
       unsubscribe();
     }
 
-    // activeGroup を B に切り替えて再リッスン
-    setActiveGroup(groupBId);
-    await wait(50);
-    const { parties, unsubscribe } = await waitForParties((ps) =>
+    // B を直接 waitForParties で購読
+    const { parties, unsubscribe } = await waitForParties(groupBId, (ps) =>
       ps.some((p) => p.storeName === 'B店'),
     );
     unsubscribe();
@@ -506,9 +490,6 @@ describe('グループ切り替え後のリスナー（最重要・再発防止�
     const names = parties.map((p) => p.storeName);
     expect(names).toContain('B店');
     expect(names).not.toContain('A店');
-
-    // 後始末で使う変数を参照しておく（lint 用）
-    void groupA;
   });
 });
 
@@ -610,8 +591,7 @@ describe('groups 更新ルールの最小権限', () => {
     });
 
     await signInAs(USER_A);
-    setActiveGroup(groupId);
-    await leaveGroup(USER_A.uid, USER_A.email);
+    await leaveGroup(groupId, USER_A.uid, USER_A.email);
 
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
       const snap = await ctx.firestore().collection('groups').doc(groupId).get();
@@ -658,7 +638,7 @@ describe('招待コードのリネーム', () => {
   it('updateInviteCode で既存グループのコードを変更でき、大文字に正規化される', async () => {
     const group = await createGroup('リネームテスト', TEST_MEMBERS, USER_A.uid, USER_A.email, 'OLD001');
 
-    const result = await updateInviteCode('new99');
+    const result = await updateInviteCode(group.id, 'new99');
     expect(result).toBe('NEW99');
 
     await testEnv.withSecurityRulesDisabled(async (ctx) => {
@@ -682,7 +662,7 @@ describe('招待コードのリネーム', () => {
     });
 
     // A が自グループを作成し、B のコードへ変更しようとする
-    await createGroup('A', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MINE01');
-    await expect(updateInviteCode('TAKEN1')).rejects.toThrow('この招待コードはすでに使われています');
+    const mine = await createGroup('A', TEST_MEMBERS, USER_A.uid, USER_A.email, 'MINE01');
+    await expect(updateInviteCode(mine.id, 'TAKEN1')).rejects.toThrow('この招待コードはすでに使われています');
   });
 });

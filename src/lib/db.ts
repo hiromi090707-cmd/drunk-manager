@@ -7,20 +7,9 @@ import { db } from '../firebase';
 import type { Group, GroupMember, Party, Member } from '../types';
 import { membersToMap, membersToArray } from './party';
 
-let activeGroupId: string | null = null;
-let historyUnsubscribe: Unsubscribe | null = null;
-
-export function setActiveGroup(groupId: string | null) {
-  activeGroupId = groupId;
-}
-
-export function getActiveGroup() {
-  return activeGroupId;
-}
-
-function partiesCollection() {
-  if (!activeGroupId) throw new Error('No active group');
-  return collection(db, 'groups', activeGroupId, 'parties');
+// groups/<groupId>/parties コレクション参照。groupId は呼び出し元（AppContext の groupInfo）が渡す。
+function partiesCollection(groupId: string) {
+  return collection(db, 'groups', groupId, 'parties');
 }
 
 export async function createGroup(
@@ -44,7 +33,6 @@ export async function createGroup(
     createdBy: creatorUid,
   };
   await setDoc(groupRef, groupData);
-  activeGroupId = groupRef.id;
   return { id: groupRef.id, ...groupData } as Group;
 }
 
@@ -62,14 +50,10 @@ export async function joinGroupByCode(inviteCode: string, uid: string, email: st
       memberEmails: [...(targetGroup.memberEmails || []), email],
     });
   }
-
-  activeGroupId = targetGroup.id;
   return targetGroup;
 }
 
-export async function updateInviteCode(newCode: string): Promise<string> {
-  if (!activeGroupId) throw new Error('No active group');
-  const groupId = activeGroupId;
+export async function updateInviteCode(groupId: string, newCode: string): Promise<string> {
   const code = newCode.trim().toUpperCase();
   if (code.length < 2 || code.length > 16) {
     throw new Error('招待コードは2〜16文字で入力してください。');
@@ -87,30 +71,25 @@ export async function findUserGroup(uid: string): Promise<Group | null> {
   if (snapshot.empty) return null;
 
   const docSnap = snapshot.docs[0];
-  const userGroup = { id: docSnap.id, ...docSnap.data() } as Group;
-  activeGroupId = userGroup.id;
-  return userGroup;
+  return { id: docSnap.id, ...docSnap.data() } as Group;
 }
 
-export async function leaveGroup(uid: string, email: string): Promise<void> {
-  if (!activeGroupId) return;
-  await updateDoc(doc(db, 'groups', activeGroupId), {
+export async function leaveGroup(groupId: string, uid: string, email: string): Promise<void> {
+  await updateDoc(doc(db, 'groups', groupId), {
     memberUids: arrayRemove(uid),
     memberEmails: arrayRemove(email),
   });
-  activeGroupId = null;
 }
 
 // グループの名簿（members 配列）を丸ごと更新する。removed を含むフル配列を渡すこと。
 // parties の members マップとは別物（こちらは配列）。
-export async function updateGroupMembers(members: GroupMember[]): Promise<void> {
-  if (!activeGroupId) return;
-  await updateDoc(doc(db, 'groups', activeGroupId), { members });
+export async function updateGroupMembers(groupId: string, members: GroupMember[]): Promise<void> {
+  await updateDoc(doc(db, 'groups', groupId), { members });
 }
 
-export async function createParty(initialData: Partial<Party>): Promise<string> {
+export async function createParty(groupId: string, initialData: Partial<Party>): Promise<string> {
   const { members, ...rest } = initialData;
-  const docRef = await addDoc(partiesCollection(), {
+  const docRef = await addDoc(partiesCollection(groupId), {
     ...rest,
     ...(members ? { members: membersToMap(members) } : {}),
     createdAt: serverTimestamp(),
@@ -119,33 +98,37 @@ export async function createParty(initialData: Partial<Party>): Promise<string> 
   return docRef.id;
 }
 
-export async function deleteParty(partyId: string): Promise<void> {
-  await deleteDoc(doc(partiesCollection(), String(partyId)));
+export async function deleteParty(groupId: string, partyId: string): Promise<void> {
+  await deleteDoc(doc(partiesCollection(groupId), String(partyId)));
 }
 
-export async function saveParty(partyData: Party): Promise<void> {
-  const partyRef = doc(partiesCollection(), String(partyData.id ?? partyData._docId));
+export async function saveParty(groupId: string, partyData: Party): Promise<void> {
+  const partyRef = doc(partiesCollection(groupId), String(partyData.id ?? partyData._docId));
   const { _docId, members, ...rest } = partyData;
   void _docId;
   await setDoc(partyRef, { ...rest, members: membersToMap(members), updatedAt: serverTimestamp() }, { merge: true });
 }
 
-export function listenToParties(callback: (parties: Party[]) => void): Unsubscribe {
-  if (historyUnsubscribe) historyUnsubscribe();
-  const q = query(partiesCollection(), orderBy('startTime', 'desc'));
-  historyUnsubscribe = onSnapshot(q, (snapshot) => {
+// 購読解除は返り値の Unsubscribe を呼び出し元（useEffect の cleanup）が必ず管理する。
+// onError は SDK が購読を恒久停止した時のみ発火する（ネットワーク断では発火しない）。
+export function listenToParties(
+  groupId: string,
+  onData: (parties: Party[]) => void,
+  onError: (error: Error) => void = console.error,
+): Unsubscribe {
+  const q = query(partiesCollection(groupId), orderBy('startTime', 'desc'));
+  return onSnapshot(q, (snapshot) => {
     const parties: Party[] = [];
     snapshot.forEach((d) => {
       const data = d.data();
       parties.push({ ...data, members: membersToArray(data.members), _docId: d.id } as Party);
     });
-    callback(parties);
-  }, console.error);
-  return historyUnsubscribe;
+    onData(parties);
+  }, onError);
 }
 
-export function listenToParty(partyId: string, callback: (party: Party) => void): Unsubscribe {
-  const partyRef = doc(partiesCollection(), String(partyId));
+export function listenToParty(groupId: string, partyId: string, callback: (party: Party) => void): Unsubscribe {
+  const partyRef = doc(partiesCollection(groupId), String(partyId));
   return onSnapshot(partyRef, (d) => {
     if (d.exists()) {
       const data = d.data();
@@ -156,9 +139,8 @@ export function listenToParty(partyId: string, callback: (party: Party) => void)
 
 // 1メンバーのフィールドのみを部分更新する。members.<id> サブツリーだけを書くため、
 // 他メンバーの members.<otherId> は Firestore 側で自動マージされ、同時更新が消し合わない。
-export async function updateMemberDrinks(partyId: string, member: Member): Promise<void> {
-  if (!activeGroupId) return;
-  const ref = doc(db, 'groups', activeGroupId, 'parties', partyId);
+export async function updateMemberDrinks(groupId: string, partyId: string, member: Member): Promise<void> {
+  const ref = doc(db, 'groups', groupId, 'parties', partyId);
   // member.id は Firestore のフィールドパス（members.<id>）に使うため、安全なセグメントである前提。
   // 固定メンバーは英小文字、動的追加は genMemberId()（m_ + base36）で生成し、いずれも安全。
   await updateDoc(ref, {
@@ -167,11 +149,11 @@ export async function updateMemberDrinks(partyId: string, member: Member): Promi
   });
 }
 
-export async function migrateLocalData(): Promise<number> {
+export async function migrateLocalData(groupId: string): Promise<number> {
   const localHistory: Party[] = JSON.parse(localStorage.getItem('drunk_history') || '[]');
   if (localHistory.length === 0) return 0;
 
-  const col = partiesCollection();
+  const col = partiesCollection(groupId);
   let migrated = 0;
   for (const party of localHistory) {
     const partyRef = doc(col, String(party.id ?? party._docId));
@@ -189,12 +171,4 @@ export async function migrateLocalData(): Promise<number> {
     localStorage.removeItem('drunk_history');
   }
   return migrated;
-}
-
-export function cleanup(): void {
-  if (historyUnsubscribe) {
-    historyUnsubscribe();
-    historyUnsubscribe = null;
-  }
-  activeGroupId = null;
 }
