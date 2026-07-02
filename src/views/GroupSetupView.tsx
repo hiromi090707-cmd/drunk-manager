@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { createGroup, joinGroupByCode, listenToParties } from '../lib/db';
+import { createGroup, joinGroupByCode } from '../lib/db';
 import { logout } from '../lib/auth';
 import { auth } from '../firebase';
 import { BrandLogo } from '../components/BrandLogo';
@@ -19,7 +19,6 @@ export function GroupSetupView() {
     try {
       const group = await createGroup('いつメン', [], user.uid, user.email, code || undefined);
       dispatch({ type: 'SET_GROUP', group });
-      listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
       alert(`グループを作成しました！\n\n招待コード: ${group.inviteCode}\n\n続いてメンバーを追加してください。`);
       dispatch({ type: 'SET_VIEW', view: 'memberManage' });
     } catch {
@@ -35,7 +34,6 @@ export function GroupSetupView() {
     try {
       const group = await joinGroupByCode(code, user.uid, user.email);
       dispatch({ type: 'SET_GROUP', group });
-      listenToParties((parties) => dispatch({ type: 'SET_HISTORY', parties }));
       dispatch({ type: 'SET_VIEW', view: 'home' });
     } catch (error: unknown) {
       alert(error instanceof Error ? error.message : 'グループへの参加に失敗しました。');

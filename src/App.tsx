@@ -3,7 +3,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase';
 import { useApp } from './context/AppContext';
 import { isUserAllowed } from './lib/auth';
-import { findUserGroup, listenToParties, migrateLocalData, cleanup } from './lib/db';
+import { findUserGroup, listenToParties, migrateLocalData } from './lib/db';
 import { LoadingView } from './views/LoadingView';
 import { LoginView } from './views/LoginView';
 import { GroupSetupView } from './views/GroupSetupView';
@@ -15,11 +15,12 @@ import { MemberManageView } from './views/MemberManageView';
 
 export function App() {
   const { state, dispatch } = useApp();
+  const groupId = state.groupInfo?.id ?? null;
 
+  // 認証状態の監視。責務は「認証確認 → グループ解決 → 画面遷移」のみ（購読はしない）
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        cleanup();
         dispatch({ type: 'LOGOUT' });
         return;
       }
@@ -36,13 +37,9 @@ export function App() {
         if (group) {
           dispatch({ type: 'SET_GROUP', group });
 
-          listenToParties((parties) => {
-            dispatch({ type: 'SET_HISTORY', parties });
-          });
-
           const localHistory = JSON.parse(localStorage.getItem('drunk_history') || '[]');
           if (localHistory.length > 0) {
-            migrateLocalData()
+            migrateLocalData(group.id)
               .then((migrated) => {
                 if (migrated > 0) alert(`${migrated}件の過去データをクラウドに移行しました！`);
               })
@@ -61,6 +58,23 @@ export function App() {
 
     return unsubscribe;
   }, []);
+
+  // 履歴リスナーの唯一の所有者。groupId の変更・null 化（退出/ログアウト/追放）で自動解除される
+  useEffect(() => {
+    if (!groupId) return;
+    return listenToParties(
+      groupId,
+      (parties) => dispatch({ type: 'SET_HISTORY', parties }),
+      (err) => {
+        // 購読の恒久停止＝このグループへの所属失効とみなし、グループ選択へ回復する。
+        // 意図的な退出中に発火しても handleLeaveGroup と着地点が同じなので冪等
+        console.error('履歴リスナーが停止:', err);
+        dispatch({ type: 'SET_GROUP', group: null });
+        dispatch({ type: 'SET_HISTORY', parties: [] });
+        dispatch({ type: 'SET_VIEW', view: 'groupSetup' });
+      },
+    );
+  }, [groupId]);
 
   switch (state.view) {
     case 'loading':     return <LoadingView />;
