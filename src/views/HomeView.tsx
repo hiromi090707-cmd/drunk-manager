@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { auth } from '../firebase';
-import { cleanup, leaveGroup, updateInviteCode } from '../lib/db';
+import { leaveGroup, updateInviteCode } from '../lib/db';
 import { logout } from '../lib/auth';
 import { createNewParty, rosterOf, findActiveParty, buildEditPartyState } from '../lib/party';
 import { BrandLogo } from '../components/BrandLogo';
@@ -18,10 +18,12 @@ export function HomeView() {
   const [saving, setSaving] = useState(false);
 
   async function handleSaveCode() {
+    const group = state.groupInfo;
+    if (!group) return;
     setSaving(true);
     try {
-      const updated = await updateInviteCode(codeInput);
-      dispatch({ type: 'SET_GROUP', group: { ...state.groupInfo!, inviteCode: updated } });
+      const updated = await updateInviteCode(group.id, codeInput);
+      dispatch({ type: 'SET_GROUP', group: { ...group, inviteCode: updated } });
       setEditingCode(false);
       alert(`招待コードを「${updated}」に変更しました。`);
     } catch (e) {
@@ -32,7 +34,9 @@ export function HomeView() {
   }
 
   async function handleNewParty() {
-    if (rosterOf(state.groupInfo).length === 0) {
+    const group = state.groupInfo;
+    if (!group) return;
+    if (rosterOf(group).length === 0) {
       alert('まずメンバーを追加してください。');
       dispatch({ type: 'SET_VIEW', view: 'memberManage' });
       return;
@@ -46,7 +50,7 @@ export function HomeView() {
       return;
     }
     try {
-      const newParty = await createNewParty(rosterOf(state.groupInfo));
+      const newParty = await createNewParty(group.id, rosterOf(group));
       dispatch({ type: 'SET_PARTY_STATE', party: newParty });
       dispatch({ type: 'SET_PARTY_TAB', tab: 'members' });
       dispatch({ type: 'SET_VIEW', view: 'party' });
@@ -58,14 +62,16 @@ export function HomeView() {
   async function handleLeaveGroup() {
     if (!confirm('このグループを退出しますか？\n退出後は招待コードで再参加できます。')) return;
     const user = auth.currentUser;
-    if (!user) return;
+    const group = state.groupInfo;
+    if (!user || !group) return;
     if (!user.email) {
       alert('メールアドレスが取得できませんでした。再ログインしてください。');
       return;
     }
     try {
-      cleanup();
-      await leaveGroup(user.uid, user.email);
+      // Firestore の退出が成功してから state を破棄する（失敗時は state 無傷でその場に留まる）。
+      // groupInfo が null になった時点で App.tsx の useEffect が購読を解除する
+      await leaveGroup(group.id, user.uid, user.email);
       dispatch({ type: 'SET_GROUP', group: null });
       dispatch({ type: 'SET_HISTORY', parties: [] });
       dispatch({ type: 'SET_VIEW', view: 'groupSetup' });
@@ -76,7 +82,6 @@ export function HomeView() {
 
   async function handleLogout() {
     if (!confirm('ログアウトしますか？')) return;
-    cleanup();
     await logout();
   }
 
