@@ -19,6 +19,7 @@ import { resolve } from 'node:path';
 import {
   createGroup,
   createParty,
+  findUserGroup,
   joinGroupByCode,
   leaveGroup,
   listenToParties,
@@ -668,6 +669,44 @@ describe('groups 更新ルールの最小権限', () => {
     await assertFails(
       bCtx.firestore().collection('groups').doc(group.id).update({ inviteCode: 'EVIL01' }),
     );
+  });
+});
+
+describe('findUserGroup の決定性', () => {
+  it('複数グループ所属時は createdAt 最古のグループを返す', async () => {
+    // ルール無効化で「A が2つのグループに所属」という異常データを直接作る
+    let oldId = '';
+    let newId = '';
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      const col = ctx.firestore().collection('groups');
+      const oldRef = col.doc();
+      await oldRef.set({
+        name: '古いグループ',
+        memberUids: [USER_A.uid],
+        memberEmails: [USER_A.email],
+        members: TEST_MEMBERS,
+        inviteCode: 'OLD111',
+        createdBy: USER_A.uid,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+      });
+      oldId = oldRef.id;
+      const newRef = col.doc();
+      await newRef.set({
+        name: '新しいグループ',
+        memberUids: [USER_A.uid],
+        memberEmails: [USER_A.email],
+        members: TEST_MEMBERS,
+        inviteCode: 'NEW111',
+        createdBy: USER_A.uid,
+        createdAt: new Date('2026-06-01T00:00:00Z'),
+      });
+      newId = newRef.id;
+    });
+
+    await signInAs(USER_A);
+    const found = await findUserGroup(USER_A.uid);
+    expect(found?.id).toBe(oldId);
+    void newId;
   });
 });
 

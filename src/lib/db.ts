@@ -1,6 +1,6 @@
 import {
   collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy, where, serverTimestamp, arrayRemove,
+  onSnapshot, query, orderBy, where, serverTimestamp, arrayRemove, Timestamp,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -70,13 +70,20 @@ export async function updateInviteCode(groupId: string, newCode: string): Promis
   return code;
 }
 
+// createdAt を ms に変換。serverTimestamp 未反映や旧データの欠損は最古(0)扱いにして順序を安定させる
+function createdAtMillis(createdAt: unknown): number {
+  return createdAt instanceof Timestamp ? createdAt.toMillis() : 0;
+}
+
 export async function findUserGroup(uid: string): Promise<Group | null> {
   const q = query(collection(db, 'groups'), where('memberUids', 'array-contains', uid));
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
 
-  const docSnap = snapshot.docs[0];
-  return { id: docSnap.id, ...docSnap.data() } as Group;
+  // 複数グループ所属は想定外だが、返す1件を createdAt 最古で決定的にする
+  const groups = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as Group);
+  groups.sort((a, b) => createdAtMillis(a.createdAt) - createdAtMillis(b.createdAt));
+  return groups[0];
 }
 
 export async function leaveGroup(groupId: string, uid: string, email: string): Promise<void> {
