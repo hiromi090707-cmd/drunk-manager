@@ -6,38 +6,31 @@
 
 | 項目 | 内容 |
 |------|------|
-| フレームワーク | React 18 + TypeScript + Vite 8 |
+| フレームワーク | React 19 + TypeScript + Vite 8 |
 | スタイリング | Tailwind CSS v4（`@tailwindcss/vite` プラグイン） |
 | バックエンド | Firebase Auth（Google OAuth）+ Firestore |
-| AI | Anthropic SDK / `claude-haiku-4-5-20251001` |
 | デプロイ | GitHub Pages（`git push origin main` → Actions 自動デプロイ） |
 
 ## 主要ファイル
 
 ```
 src/
-├── constants.ts        # FIXED_MEMBERS・DRINK_TYPES・SPLIT_ROLES・CLAUDE_MODEL
+├── constants.ts        # FIXED_MEMBERS・DRINK_TYPES・SPLIT_ROLES
 ├── types/index.ts      # 全TypeScript型定義
 ├── index.css           # CSS変数 + @layer components（テーマ: 居酒屋アンバー）
 ├── context/
 │   └── AppContext.tsx  # グローバル状態（useReducer）。editingExistingPartyフラグあり
 ├── lib/
-│   ├── db.ts           # Firestoreの全操作（createParty/saveParty/deleteParty/listen系）
-│   └── claude.ts       # AI要約（dangerouslyAllowBrowser: true）
+│   └── db.ts           # Firestoreの全操作（**ステートレス。groupId は全関数の第一引数**）
 └── views/
     ├── HomeView.tsx
     ├── PartyView/      # MembersTab・SplitTab・SummaryTab
     └── StatsView/      # DayStats・MonthStats・YearStats・AllStats
 ```
 
-## メンバー構成（固定）
+## メンバー構成
 
-```typescript
-// src/constants.ts
-FIXED_MEMBERS = [hiromi, souga, takumi, takuto, rui]  // 5人固定
-```
-
-メンバー追加・動的化は将来対応予定。
+初期メンバーは `FIXED_MEMBERS`（グループ未設定時のフォールバック）。**名簿はグループごとに動的管理**（`roster.ts`・`MemberManageView`。追加・改名・ソフト削除に対応）
 
 ## 重要な既知事項（ハマりポイント）
 
@@ -63,6 +56,9 @@ FIXED_MEMBERS = [hiromi, souga, takumi, takuto, rui]  // 5人固定
 - 購読マージは `mergeMembers` で「他メンバーの変化分だけ」取り込む（自分の入力中カウントを巻き戻さない）
 - 「飲み会スタート」は endTime 無しの進行中 party があれば合流（`findActiveParty`）。cold-load 直後は `historyData` 未取得で重複作成されうる小さな窓がある（許容済み）
 - 純粋関数テストは `npm run test:unit`（emulator 不要）、Firestore 込みは `npm run test:emulators`
+- **db.ts はステートレス**。`activeGroupId` のような隠れ状態は持たない。groupId は全関数の第一引数で、呼び出し元は `state.groupInfo.id` を渡す
+- **履歴リスナーの所有者は App.tsx の useEffect（キー: groupId）だけ**。ビューで `listenToParties` を呼ばない。`SET_GROUP` を dispatch すれば購読は自動で開始・切替・解除される
+- リスナーの onError は「所属失効」として扱い groupSetup へ回復する。退出は「Firestore 更新成功 → state 破棄」の順（逆にすると退出失敗時に取り残される）
 
 ## 環境変数
 
@@ -96,7 +92,3 @@ git push origin main  # デプロイ（GitHub Actions が自動でGitHub Pages�
 ```
 
 **push前は必ず `npm run build` でエラーなしを確認すること。**
-
-## 今後の予定
-
-- 友人追加・グループ共有機能（現状はFIXED_MEMBERSの5人固定）
